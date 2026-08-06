@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WRAITH//NET">
+<meta name="theme-color" content="#03060d">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>WRAITH//NET — OSINT INTELLIGENCE TERMINAL</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="style.css?v=6">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ══════════════ BOOT ══════════════ -->
+<div id="boot">
+  <canvas id="boot-canvas"></canvas>
+  <div id="boot-content">
+    <div id="ghost-wrap">
+      <svg viewBox="0 0 200 240" class="ghost-copy" id="ghost-trail2"><defs></defs>
+        <path class="ghost-body" d="M100,26 C64,26 36,54 36,90 L36,196 C36,196 50,180 60,196 C70,212 80,180 90,196 C100,212 110,180 120,196 C130,212 140,180 150,196 C150,196 164,180 164,196 L164,90 C164,54 136,26 100,26 Z"/>
+      </svg>
+      <svg viewBox="0 0 200 240" class="ghost-copy" id="ghost-trail1">
+        <path class="ghost-body" d="M100,26 C64,26 36,54 36,90 L36,196 C36,196 50,180 60,196 C70,212 80,180 90,196 C100,212 110,180 120,196 C130,212 140,180 150,196 C150,196 164,180 164,196 L164,90 C164,54 136,26 100,26 Z"/>
+      </svg>
+      <svg viewBox="0 0 200 240" class="ghost-copy" id="ghost-main">
+        <defs>
+          <linearGradient id="ghostGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4fc3ff" stop-opacity=".5"/>
+            <stop offset="100%" stop-color="#0a2a5e" stop-opacity=".35"/>
+          </linearGradient>
+        </defs>
+        <path class="ghost-body" d="M100,26 C64,26 36,54 36,90 L36,196 C36,196 50,180 60,196 C70,212 80,180 90,196 C100,212 110,180 120,196 C130,212 140,180 150,196 C150,196 164,180 164,196 L164,90 C164,54 136,26 100,26 Z"/>
+        <ellipse class="ghost-eye" cx="78" cy="98" rx="10" ry="14"/>
+        <ellipse class="ghost-eye" cx="122" cy="98" rx="10" ry="14"/>
+        <circle class="ghost-eye-glow" cx="78" cy="100" r="3.4"/>
+        <circle class="ghost-eye-glow" cx="122" cy="100" r="3.4"/>
+      </svg>
+    </div>
+    <div id="boot-title">WRAITH<em>//</em>NET</div>
+    <div id="boot-sub">OPEN SOURCE INTELLIGENCE TERMINAL · OPERATOR ACCESS</div>
+    <div id="boot-log"></div>
+    <div id="bbar-w"><div id="bbar"></div></div>
+    <div id="bpct">0%</div>
+    <div id="bstat">INITIALIZING...</div>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app">
+<div id="hdr">
+  <div class="htop">
+    <div class="logo-wrap">
+      <svg id="globe-icon-btn" viewBox="0 0 100 110" title="Jump to interactive globe">
+        <g transform="rotate(-8 50 55)">
+          <path class="brand-ghost-wisp" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
+          <path class="brand-ghost-body" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
+          <ellipse class="brand-ghost-eye" cx="39" cy="36" rx="7.5" ry="9.5"/>
+          <ellipse class="brand-ghost-eye" cx="59" cy="32" rx="7" ry="9"/>
+        </g>
+      </svg>
+      <div>
+        <div class="logo">WRAITH<em>//</em>NET</div>
+        <div class="lsub">◈ OPEN SOURCE INTELLIGENCE TERMINAL ◈ OPERATOR ACCESS ONLY ◈ LIVE FEEDS + CURATED REFERENCE</div>
+      </div>
+    </div>
+    <div class="hpills">
+      <div class="hpill"><div class="dot c"></div>FEEDS LIVE</div>
+      <div class="hpill"><div class="dot g"></div>MARKETS LIVE</div>
+      <div class="hpill"><div class="dot r"></div>THREAT WATCH</div>
+      <div id="lupd">SYNC: --:--:--</div>
+    </div>
+  </div>
+  <div id="clocks">
+    <div class="ck z" id="ck-wrap-z"><div class="ck-l">ZULU / UTC</div><div class="ck-t" id="ck-t-z">--:--:--</div><div class="ck-d" id="ck-d-z">---</div></div>
+    <div class="ck" id="ck-wrap-dc"><div class="ck-l">WASHINGTON DC</div><div class="ck-t" id="ck-t-dc">--:--:--</div><div class="ck-d" id="ck-d-dc">---</div></div>
+    <div class="ck" id="ck-wrap-br"><div class="ck-l">BRUSSELS</div><div class="ck-t" id="ck-t-br">--:--:--</div><div class="ck-d" id="ck-d-br">---</div></div>
+    <div class="ck" id="ck-wrap-ta"><div class="ck-l">TEL AVIV</div><div class="ck-t" id="ck-t-ta">--:--:--</div><div class="ck-d" id="ck-d-ta">---</div></div>
+    <div class="ck" id="ck-wrap-mo"><div class="ck-l">MOSCOW</div><div class="ck-t" id="ck-t-mo">--:--:--</div><div class="ck-d" id="ck-d-mo">---</div></div>
+    <div class="ck" id="ck-wrap-bj"><div class="ck-l">BEIJING</div><div class="ck-t" id="ck-t-bj">--:--:--</div><div class="ck-d" id="ck-d-bj">---</div></div>
+    <div class="ck" id="ck-wrap-tk"><div class="ck-l">TOKYO</div><div class="ck-t" id="ck-t-tk">--:--:--</div><div class="ck-d" id="ck-d-tk">---</div></div>
+  </div>
+</div>
+
+<div class="twrap"><div class="tscroll" id="global-ticker"><div class="ti"><span class="ti-s">WRAITH//NET</span><span>LOADING TICKER...</span></div></div></div>
+
+<div id="tnav">
+  <button class="tb on" data-t="cmd">⬡ CMD CENTER</button>
+  <button class="tb" data-t="briefing">◆ DAILY BRIEFING</button>
+  <button class="tb" data-t="news">◈ NEWS WIRE</button>
+  <button class="tb" data-t="social">◎ SOCIAL / OSINT</button>
+  <button class="tb" data-t="trending">▦ TRENDING &amp; ANALYSIS</button>
+  <button class="tb" data-t="markets">▲ MARKETS</button>
+  <button class="tb" data-t="trackers">▶ LIVE TRACKERS</button>
+  <button class="tb" data-t="geospatial">◐ GEOSPATIAL</button>
+  <button class="tb" data-t="commands">⬣ REGIONS</button>
+  <button class="tb" data-t="assets">⧉ ASSETS</button>
+  <button class="tb" data-t="history">⟟ HISTORY</button>
+  <button class="tb" data-t="weather">◑ WEATHER</button>
+  <button class="tb" data-t="reference">⟠ REFERENCE</button>
+</div>
+
+<div id="content">
+
+<!-- ═══════════ CMD CENTER ═══════════ -->
+<div class="tp on" id="tp-cmd">
+  <div class="g21">
+    <div class="col">
+      <div class="pnl">
+        <div class="ph"><div class="pt">◈ LIVE HEADLINES — TOP OF WIRE</div><span class="pbadge live">● LIVE</span></div>
+        <div class="pb"><div class="feed" id="feed-cmd"></div></div>
+      </div>
+      <div class="pnl">
+        <div class="ph"><div class="pt">◈ RAPID ACCESS</div></div>
+        <div class="pb">
+          <div class="lcards">
+            <a class="lcard" href="https://ground.news" target="_blank"><div class="lcard-name">GROUND NEWS</div><div class="lcard-desc">Bias analysis</div></a>
+            <a class="lcard r" href="https://x.com/disclosetv" target="_blank"><div class="lcard-name">DISCLOSE.TV</div><div class="lcard-desc">X intel stream</div></a>
+            <a class="lcard" href="https://globe.adsbexchange.com" target="_blank"><div class="lcard-name">ADSB XCHANGE</div><div class="lcard-desc">Unfiltered flights</div></a>
+            <a class="lcard" href="https://liveuamap.com" target="_blank"><div class="lcard-name">LIVEUAMAP</div><div class="lcard-desc">Live conflict</div></a>
+            <a class="lcard" href="https://www.marinetraffic.com" target="_blank"><div class="lcard-name">MARINETRAFFIC</div><div class="lcard-desc">Live vessels</div></a>
+            <a class="lcard" href="https://www.pizzint.watch" target="_blank"><div class="lcard-name">PIZZA INDEX</div><div class="lcard-desc">Crisis signal</div></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="pnl r">
+        <div class="ph r"><div class="pt">◭ REFERENCE THREAT MATRIX</div><span class="pbadge ref">REFERENCE</span></div>
+        <div class="pb">
+          <div class="tbar"><div class="tbar-l">RUSSIA/UKR</div><div class="tmet"><div class="tfill" style="width:85%;background:var(--r);box-shadow:0 0 6px var(--r)"></div></div><div class="tpct" style="color:var(--r)">85</div></div>
+          <div class="tbar"><div class="tbar-l">MID EAST</div><div class="tmet"><div class="tfill" style="width:78%;background:#ff9633;box-shadow:0 0 6px #ff9633"></div></div><div class="tpct" style="color:#ff9633">78</div></div>
+          <div class="tbar"><div class="tbar-l">CHINA/TWN</div><div class="tmet"><div class="tfill" style="width:63%;background:var(--y);box-shadow:0 0 6px var(--y)"></div></div><div class="tpct" style="color:var(--y)">63</div></div>
+          <div class="tbar"><div class="tbar-l">CYBER</div><div class="tmet"><div class="tfill" style="width:70%;background:var(--c);box-shadow:0 0 6px var(--c)"></div></div><div class="tpct" style="color:var(--c)">70</div></div>
+          <div class="tbar"><div class="tbar-l">NUCLEAR</div><div class="tmet"><div class="tfill" style="width:33%;background:var(--g);box-shadow:0 0 6px var(--g)"></div></div><div class="tpct" style="color:var(--g)">33</div></div>
+          <div class="tbar"><div class="tbar-l">SUPPLY CHN</div><div class="tmet"><div class="tfill" style="width:46%;background:var(--y);box-shadow:0 0 6px var(--y)"></div></div><div class="tpct" style="color:var(--y)">46</div></div>
+          <div class="ref-note"><b>NOTE:</b> Illustrative reference levels, not a live-computed index. See DAILY BRIEFING for feed-derived analysis.</div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="stat"><div class="sv" id="st-crypto-count">6</div><div class="sl">CRYPTO TRACKED (LIVE)</div></div>
+        <div class="stat r"><div class="sv" id="st-hotspot-count">—</div><div class="sl">GLOBE HOTSPOTS</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DAILY BRIEFING ═══════════ -->
+<div class="tp" id="tp-briefing">
+  <div id="daily-brief">
+    <div class="brief-header">
+      <div class="brief-title">⬡ WRAITH//NET DAILY SYNOPSIS</div>
+      <div class="brief-meta">
+        <span id="brief-timestamp" style="color:var(--mu);font-size:9px;">GENERATING...</span>
+        <button class="rbtn" onclick="generateDailySynopsis()">↻ REGENERATE</button>
+      </div>
+    </div>
+    <div class="brief-body" id="brief-body"><span class="spin">◌</span> Waiting on live feeds...</div>
+  </div>
+  <div class="ref-note">Visit NEWS WIRE and SOCIAL/OSINT (Reddit) first so this synopsis has more headlines to analyze — it only scans what's been fetched this session.</div>
+</div>
+
+<!-- ═══════════ NEWS WIRE (Wire/World + Domestic + Ground News) ═══════════ -->
+<div class="tp" id="tp-news">
+  <div class="sec-switch">
+    <label>VIEW</label>
+    <select class="sec-select" data-group="news">
+      <option value="rss">LIVE RSS — WORLD / DOMESTIC / GEOPOLITICS</option>
+      <option value="ground">GROUND NEWS — BIAS EMBED</option>
+    </select>
+  </div>
+
+  <div class="subpanel" data-group="news" data-key="rss">
+    <div class="g3">
+      <div class="pnl">
+        <div class="ph"><div class="pt">◈ WORLD WIRE (BBC / AL JAZEERA / GUARDIAN / NPR)</div>
+          <button class="rbtn" onclick="loadFeedGroup('feed-wire', RSS_FEEDS.wire, 'tc')">↻</button>
+        </div>
+        <div class="pb"><div class="feed" id="feed-wire" style="max-height:560px;"></div></div>
+      </div>
+      <div class="pnl">
+        <div class="ph"><div class="pt">⌂ DOMESTIC (US) — NPR / GUARDIAN US</div>
+          <button class="rbtn" onclick="loadFeedGroup('feed-domestic', RSS_FEEDS.domestic, 'tc')">↻</button>
+        </div>
+        <div class="pb"><div class="feed" id="feed-domestic" style="max-height:560px;"></div></div>
+      </div>
+      <div class="pnl r">
+        <div class="ph r"><div class="pt">◭ GEOPOLITICS FEED</div>
+          <button class="rbtn" onclick="loadFeedGroup('feed-geo', RSS_FEEDS.geo, 'tr')">↻</button>
+        </div>
+        <div class="pb"><div class="feed" id="feed-geo" style="max-height:560px;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subpanel" data-group="news" data-key="ground" style="display:none;">
+    <div class="g21">
+      <div class="pnl">
+        <div class="ph"><div class="pt">◉ GROUND NEWS — MEDIA BIAS INTELLIGENCE</div></div>
+        <div class="pb" style="padding:0;">
+          <div class="emb"><div class="emblbl">GROUND.NEWS // LIVE EMBED</div>
+            <iframe data-lazy-src="https://ground.news/interest/breaking-news" height="560" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" loading="lazy"></iframe>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="pnl c">
+          <div class="ph c"><div class="pt">◈ BIAS METHODOLOGY</div></div>
+          <div class="pb" style="font-size:11px;line-height:1.9;">
+            <p><span style="color:var(--g)">▸ BLIND SPOT</span> — Stories ignored by one political side</p>
+            <p style="margin-top:6px;"><span style="color:var(--c)">▸ FRAMING GAP</span> — Same facts, opposite headlines</p>
+            <p style="margin-top:6px;"><span style="color:var(--r)">▸ OWNERSHIP</span> — Government / billionaire / corporate control</p>
+            <hr class="div">
+            <div class="lcards" style="grid-template-columns:1fr;">
+              <a class="lcard" href="https://www.allsides.com/unbiased-balanced-news" target="_blank"><div class="lcard-name">ALLSIDES</div><div class="lcard-desc">Balanced news comparison</div></a>
+              <a class="lcard" href="https://mediabiasfactcheck.com" target="_blank"><div class="lcard-name">MBFC</div><div class="lcard-desc">Media Bias / Fact Check</div></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SOCIAL / OSINT (X + Instagram + Reddit) ═══════════ -->
+<div class="tp" id="tp-social">
+  <div class="sec-switch">
+    <label>SOURCE</label>
+    <select class="sec-select" data-group="social">
+      <option value="x">X / TWITTER — DISCLOSE.TV &amp; OSINT ACCOUNTS</option>
+      <option value="instagram">INSTAGRAM</option>
+      <option value="reddit">REDDIT</option>
+    </select>
+  </div>
+
+  <div class="subpanel" data-group="social" data-key="x">
+    <div class="ref-note" style="margin-bottom:14px;">X/Twitter blocks unauthenticated browser-side scraping and its official API now requires a paid key — this is a curated link directory to real accounts, not a live embedded feed. Click through for the live timeline.</div>
+    <div class="g21">
+      <div class="col">
+        <div class="pnl r">
+          <div class="ph r"><div class="pt">◭ DISCLOSE.TV — FEATURED</div><span class="pbadge ref">DIRECTORY</span></div>
+          <div class="pb">
+            <a class="lcard r" href="https://x.com/disclosetv" target="_blank" style="display:block;">
+              <div class="lcard-name">@DISCLOSE.TV</div>
+              <div class="lcard-desc">Fast-breaking intel &amp; X-trending stories — one of the most-followed OSINT/news-alert accounts. Open for live timeline.</div>
+            </a>
+          </div>
+        </div>
+        <div class="pnl">
+          <div class="ph"><div class="pt">◎ KEY OSINT ACCOUNTS — X</div></div>
+          <div class="pb"><div class="lcards" id="osint-x-cards"></div></div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="pnl c">
+          <div class="ph c"><div class="pt">◈ OSINT TOOLBOX</div></div>
+          <div class="pb">
+            <div class="lcards">
+              <a class="lcard" href="https://www.shodan.io" target="_blank"><div class="lcard-name">SHODAN</div><div class="lcard-desc">Device exposure scanner</div></a>
+              <a class="lcard" href="https://osintframework.com" target="_blank"><div class="lcard-name">OSINT FRAMEWORK</div><div class="lcard-desc">Tool index</div></a>
+              <a class="lcard" href="https://intelx.io" target="_blank"><div class="lcard-name">INTEL X</div><div class="lcard-desc">Deep web search</div></a>
+              <a class="lcard" href="https://www.bellingcat.com" target="_blank"><div class="lcard-name">BELLINGCAT</div><div class="lcard-desc">Investigation methodology</div></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subpanel" data-group="social" data-key="instagram" style="display:none;">
+    <div class="ref-note" style="margin-bottom:14px;">Instagram requires an authenticated session to browse and actively blocks headless/browser scraping (violates their Terms of Service) — this is a curated directory linking to the real accounts.</div>
+    <div class="pnl">
+      <div class="ph"><div class="pt">▥ KEY OSINT INSTAGRAM ACCOUNTS</div></div>
+      <div class="pb"><div class="lcards" id="ig-cards"></div></div>
+    </div>
+  </div>
+
+  <div class="subpanel" data-group="social" data-key="reddit" style="display:none;">
+    <div class="g2" id="reddit-panels"></div>
+  </div>
+</div>
+
+<!-- ═══════════ TRENDING & ANALYSIS (Wiki + Geopolitics Trends) ═══════════ -->
+<div class="tp" id="tp-trending">
+  <div class="pnl">
+    <div class="ph"><div class="pt">▦ WIKIPEDIA — TOP VIEWED ARTICLES (LIVE, WIKIMEDIA API)</div>
+      <button class="rbtn" onclick="loadWikiTrending()">↻ REFRESH</button>
+    </div>
+    <div class="pb"><div class="feed" id="wiki-trending" style="max-height:420px;"></div></div>
+  </div>
+  <div class="ref-note gap" style="margin-bottom:12px;">Geopolitics explainers below — what each development is, why it matters, and its implications. Structural/durable reference; open the live tracker link for current status.</div>
+  <div class="filter-row" id="trend-filter" data-target="trend-explainers"></div>
+  <div id="trend-explainers"></div>
+
+  <div class="pnl r gap">
+    <div class="ph r"><div class="pt">◭ SCENARIO PLANNING — NOT A FORECAST</div></div>
+    <div class="pb">
+      <div class="ref-note" style="margin-bottom:12px;">These are illustrative if/then branches for orientation — not predictions of what will happen. Likelihood labels are qualitative judgment calls, not statistical probabilities. Pick a region to see its scenarios.</div>
+      <div class="sec-switch" style="margin-bottom:12px;">
+        <label>REGION</label>
+        <select class="sec-select" id="scenario-select"></select>
+      </div>
+      <div id="scenario-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MARKETS (Equities + Crypto) ═══════════ -->
+<div class="tp" id="tp-markets">
+  <div class="g2">
+    <div class="pnl">
+      <div class="ph"><div class="pt">▲ MAJOR INDICES (LIVE, STOOQ)</div><button class="rbtn" onclick="loadStocks()">↻</button></div>
+      <div class="pb"><div id="stock-indices"></div></div>
+    </div>
+    <div class="pnl r">
+      <div class="ph r"><div class="pt">◭ DEFENSE SECTOR (LIVE, STOOQ)</div></div>
+      <div class="pb"><div id="stock-defense"></div></div>
+    </div>
+  </div>
+  <div class="pnl gap">
+    <div class="ph"><div class="pt">◆ CRYPTOCURRENCY MARKETS (LIVE, COINGECKO)</div><button class="rbtn" onclick="loadCrypto()">↻</button></div>
+    <div class="pb"><div id="crypto-list"></div></div>
+  </div>
+  <div class="ref-note gap">No paid market-data key is configured (Alpha Vantage / Unusual Whales etc. require one) — indices/defense stocks are pulled live and free from stooq.com. For options flow / dark-pool data, open <a href="https://unusualwhales.com" target="_blank" style="color:var(--c)">Unusual Whales ↗</a> directly.</div>
+</div>
+
+<!-- ═══════════ LIVE TRACKERS (Flights + Maritime + Pizza) ═══════════ -->
+<div class="tp" id="tp-trackers">
+  <div class="sec-switch">
+    <label>TRACKER</label>
+    <select class="sec-select" data-group="trackers">
+      <option value="flights">FLIGHTS — ADS-B EXCHANGE</option>
+      <option value="maritime">MARITIME — MARINETRAFFIC</option>
+      <option value="pizza">PIZZA INDEX</option>
+    </select>
+  </div>
+  <div class="pnl">
+    <div class="ph"><div class="pt" id="tracker-title">▶ LIVE FLIGHT TRACKING — ADS-B EXCHANGE</div></div>
+    <div class="emb"><iframe id="tracker-iframe" height="640"></iframe></div>
+  </div>
+  <div class="ref-note gap" id="tracker-note">The &quot;Pentagon Pizza Index&quot; is a long-running joke/informal indicator theorizing that late-night pizza-delivery spikes near the Pentagon correlate with crisis activity — treat it as a curiosity, not a validated signal.</div>
+</div>
+
+<!-- ═══════════ GEOSPATIAL (War Map + Globe + Satellite) ═══════════ -->
+<div class="tp" id="tp-geospatial">
+  <div class="sec-switch">
+    <label>VIEW</label>
+    <select class="sec-select" data-group="geospatial">
+      <option value="warmap">CONFLICT MAP (2D REFERENCE)</option>
+      <option value="globe">3D INTERACTIVE GLOBE</option>
+      <option value="satellite">SATELLITE IMAGERY (NASA GIBS)</option>
+    </select>
+  </div>
+
+  <div class="subpanel" data-group="geospatial" data-key="warmap">
+    <div class="pnl">
+      <div class="ph"><div class="pt">⌖ CONFLICT MAP — CURATED HOTSPOTS (REFERENCE)</div><span class="pbadge ref">REFERENCE</span></div>
+      <div class="pb">
+        <div class="filter-row" id="map-filter"></div>
+        <div id="conflict-map"></div>
+      </div>
+    </div>
+    <div class="ref-note gap">Markers are a curated snapshot (same data as the 3D GLOBE view, with fuller briefs). For a continuously live-updated conflict map, use <a href="https://liveuamap.com" target="_blank" style="color:var(--c)">Liveuamap ↗</a>.</div>
+  </div>
+
+  <div class="subpanel" data-group="geospatial" data-key="globe" style="display:none;">
+    <div class="pnl">
+      <div class="ph"><div class="pt">◐ INTERACTIVE GLOBE — CLICK A HOTSPOT MARKER</div></div>
+      <div class="pb" style="padding-bottom:0;"><div class="filter-row" id="globe-filter"></div></div>
+      <div id="globe-wrap">
+        <div id="globe-loading">LOADING EARTH TEXTURE...</div>
+        <canvas id="globe-canvas-el"></canvas>
+        <div id="globe-info">
+          <div id="globe-info-title"></div>
+          <div id="globe-info-body"></div>
+          <div id="globe-info-tags"></div>
+          <a id="globe-info-link" href="#" target="_blank" style="color:var(--c);font-size:10px;">LIVE TRACKER ↗</a>
+          <div style="text-align:right;margin-top:8px;"><button class="rbtn" id="globe-info-close">CLOSE [X]</button></div>
+        </div>
+        <div class="globe-hint">DRAG TO ROTATE · SCROLL TO ZOOM · CLICK A MARKER</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subpanel" data-group="geospatial" data-key="satellite" style="display:none;">
+    <div class="pnl">
+      <div class="ph"><div class="pt">⌬ SATELLITE IMAGERY — NASA GIBS (LIVE, MODIS TRUE-COLOR)</div></div>
+      <div class="pb"><div id="satellite-map"></div></div>
+    </div>
+    <div class="ref-note gap">
+      Real public-domain satellite tiles from NASA's Global Imagery Browse Services, no key required. Imagery is ~2 days behind present (GIBS finalization lag). For live event-specific imagery: <a href="https://worldview.earthdata.nasa.gov/" target="_blank" style="color:var(--c)">NASA Worldview ↗</a> · <a href="https://apps.sentinel-hub.com/eo-browser/" target="_blank" style="color:var(--c)">Sentinel Hub EO Browser ↗</a> · <a href="https://earth.google.com/web/" target="_blank" style="color:var(--c)">Google Earth ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ REGIONS (US Combatant Commands) ═══════════ -->
+<div class="tp" id="tp-commands">
+  <div class="sec-switch">
+    <label>REGION</label>
+    <select class="sec-select" data-group="commands" id="commands-select"></select>
+  </div>
+  <div id="commands-detail"></div>
+</div>
+
+<!-- ═══════════ ASSETS (per-country military posture) ═══════════ -->
+<div class="tp" id="tp-assets">
+  <div class="ref-note" style="margin-bottom:14px;">Illustrative posture summary, not live order-of-battle tracking — no free API provides real deployment data (this is hard even for professional OSINT shops). For real positions, use FLIGHTS/MARITIME trackers or professional sources (Janes, IISS Military Balance).</div>
+  <div class="sec-switch">
+    <label>COUNTRY</label>
+    <select class="sec-select" id="assets-select"></select>
+  </div>
+  <div id="assets-detail"></div>
+</div>
+
+<!-- ═══════════ HISTORY (historical parallels to current hotspots) ═══════════ -->
+<div class="tp" id="tp-history">
+  <div class="ref-note" style="margin-bottom:14px;">Historical context for interpreting today's hotspots — educational framing, not a claim that history repeats exactly. Cross-referenced with the GEOSPATIAL / TRENDING tabs.</div>
+  <div id="history-cards"></div>
+</div>
+
+<!-- ═══════════ WEATHER ═══════════ -->
+<div class="tp" id="tp-weather">
+  <div class="pnl">
+    <div class="ph"><div class="pt">◑ GLOBAL WEATHER — LIVE (OPEN-METEO)</div><button class="rbtn" onclick="loadWeather()">↻</button></div>
+    <div class="pb"><div class="wx-grid" id="wx-grid"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ REFERENCE (Sanctions + Declassified + NDAA/NSS + Theaters + Mil Power + Defense Industry) ═══════════ -->
+<div class="tp" id="tp-reference">
+  <div class="sec-switch">
+    <label>SECTION</label>
+    <select class="sec-select" data-group="reference">
+      <option value="sanctions">SANCTIONS &amp; WATCHLISTS</option>
+      <option value="leaks">DECLASSIFIED FILES &amp; LEAKS</option>
+      <option value="nssndaa">NDAA &amp; NSS</option>
+      <option value="milrank">MILITARY POWER RANKINGS</option>
+      <option value="defense">DEFENSE INDUSTRY NEWS</option>
+    </select>
+  </div>
+
+  <div class="subpanel" data-group="reference" data-key="sanctions">
+    <div class="pnl">
+      <div class="ph"><div class="pt">⌗ SANCTIONS &amp; WATCHLISTS</div></div>
+      <div class="pb">
+        <div class="ref-note" style="margin-bottom:12px;">No free public API returns a clean, current sanctions dataset without a key (OpenSanctions now gates its API) — this stays link-based to keep the data accurate rather than showing a stale local copy.</div>
+        <div class="lcards">
+          <a class="lcard" href="https://www.opensanctions.org/" target="_blank"><div class="lcard-name">OPENSANCTIONS</div><div class="lcard-desc">Consolidated global watchlist search</div></a>
+          <a class="lcard" href="https://sanctionssearch.ofac.treas.gov/" target="_blank"><div class="lcard-name">OFAC SDN SEARCH</div><div class="lcard-desc">U.S. Treasury sanctions list</div></a>
+          <a class="lcard" href="https://www.sanctionsmap.eu/" target="_blank"><div class="lcard-name">EU SANCTIONS MAP</div><div class="lcard-desc">European Union sanctions regimes</div></a>
+          <a class="lcard" href="https://www.gov.uk/government/publications/financial-sanctions-consolidated-list-of-targets" target="_blank"><div class="lcard-name">UK SANCTIONS LIST</div><div class="lcard-desc">OFSI consolidated list</div></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subpanel" data-group="reference" data-key="leaks" style="display:none;">
+    <div class="pnl">
+      <div class="ph"><div class="pt">◭ DECLASSIFIED FILES &amp; LEAK ARCHIVES</div></div>
+      <div class="pb"><div class="lcards" id="declass-cards"></div></div>
+    </div>
+  </div>
+
+  <div class="subpanel" data-group="reference" data-key="nssndaa" style="display:none;">
+    <div id="nss-block"></div>
+  </div>
+
+  <div class="subpanel" data-group="reference" data-key="milrank" style="display:none;">
+    <div class="pnl">
+      <div class="ph"><div class="pt">⧯ MILITARY POWER — REFERENCE RANKINGS</div><span class="pbadge ref">REFERENCE</span></div>
+      <div class="pb">
+        <div style="overflow-x:auto;">
+          <table class="dtbl">
+            <thead><tr><th>RANK</th><th>COUNTRY</th><th>EST. DEFENSE BUDGET</th><th>ACTIVE PERSONNEL</th><th>NOTES</th></tr></thead>
+            <tbody id="mil-rankings-body"></tbody>
+          </table>
+        </div>
+        <div class="ref-note gap" id="mil-source-note"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subpanel" data-group="reference" data-key="defense" style="display:none;">
+    <div class="g21">
+      <div class="pnl r">
+        <div class="ph r"><div class="pt">◭ DEFENSE INDUSTRY NEWS — LIVE RSS</div>
+          <button class="rbtn" onclick="loadFeedGroup('feed-defense', RSS_FEEDS.defense, 'tr')">↻ REFRESH</button>
+        </div>
+        <div class="pb"><div class="feed" id="feed-defense" style="max-height:560px;"></div></div>
+      </div>
+      <div class="col">
+        <div class="pnl"><div class="ph"><div class="pt">◈ SOURCES</div></div>
+          <div class="pb"><div class="lcards" id="defense-links" style="grid-template-columns:1fr;"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  WRAITH//NET — personal OSINT aggregation dashboard. Live sections pull from free, no-key public APIs/RSS (subject to source rate-limits &amp; CORS-proxy reliability). Reference sections are static curated snapshots — always verify against the primary source linked in each panel before treating anything here as current fact.
+</footer>
+</div>
+
+<script src="data.js?v=6"></script>
+<script src="app.js?v=6"></script>
+</body>
+</html>
