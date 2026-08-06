@@ -14,7 +14,7 @@
 <title>WRAITH//NET — OSINT INTELLIGENCE TERMINAL</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=9">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
@@ -28,24 +28,28 @@
   <canvas id="boot-canvas"></canvas>
   <div id="boot-content">
     <div id="ghost-wrap">
-      <svg viewBox="0 0 200 240" class="ghost-copy" id="ghost-trail2"><defs></defs>
-        <path class="ghost-body" d="M100,26 C64,26 36,54 36,90 L36,196 C36,196 50,180 60,196 C70,212 80,180 90,196 C100,212 110,180 120,196 C130,212 140,180 150,196 C150,196 164,180 164,196 L164,90 C164,54 136,26 100,26 Z"/>
+      <svg viewBox="0 0 100 110" class="ghost-copy" id="ghost-trail2">
+        <g transform="translate(50,55) scale(0.8,1.2) translate(-50,-55) rotate(-8 50 55)">
+          <path class="ghost-body" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
+        </g>
       </svg>
-      <svg viewBox="0 0 200 240" class="ghost-copy" id="ghost-trail1">
-        <path class="ghost-body" d="M100,26 C64,26 36,54 36,90 L36,196 C36,196 50,180 60,196 C70,212 80,180 90,196 C100,212 110,180 120,196 C130,212 140,180 150,196 C150,196 164,180 164,196 L164,90 C164,54 136,26 100,26 Z"/>
+      <svg viewBox="0 0 100 110" class="ghost-copy" id="ghost-trail1">
+        <g transform="translate(50,55) scale(0.8,1.2) translate(-50,-55) rotate(-8 50 55)">
+          <path class="ghost-body" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
+        </g>
       </svg>
-      <svg viewBox="0 0 200 240" class="ghost-copy" id="ghost-main">
+      <svg viewBox="0 0 100 110" class="ghost-copy" id="ghost-main">
         <defs>
           <linearGradient id="ghostGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#4fc3ff" stop-opacity=".5"/>
             <stop offset="100%" stop-color="#0a2a5e" stop-opacity=".35"/>
           </linearGradient>
         </defs>
-        <path class="ghost-body" d="M100,26 C64,26 36,54 36,90 L36,196 C36,196 50,180 60,196 C70,212 80,180 90,196 C100,212 110,180 120,196 C130,212 140,180 150,196 C150,196 164,180 164,196 L164,90 C164,54 136,26 100,26 Z"/>
-        <ellipse class="ghost-eye" cx="78" cy="98" rx="10" ry="14"/>
-        <ellipse class="ghost-eye" cx="122" cy="98" rx="10" ry="14"/>
-        <circle class="ghost-eye-glow" cx="78" cy="100" r="3.4"/>
-        <circle class="ghost-eye-glow" cx="122" cy="100" r="3.4"/>
+        <g transform="translate(50,55) scale(0.8,1.2) translate(-50,-55) rotate(-8 50 55)">
+          <path class="ghost-body" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
+          <ellipse class="ghost-eye-glow" cx="39" cy="36" rx="7.5" ry="9.5"/>
+          <ellipse class="ghost-eye-glow" cx="59" cy="32" rx="7" ry="9"/>
+        </g>
       </svg>
     </div>
     <div id="boot-title">WRAITH<em>//</em>NET</div>
@@ -63,7 +67,7 @@
   <div class="htop">
     <div class="logo-wrap">
       <svg id="globe-icon-btn" viewBox="0 0 100 110" title="Jump to interactive globe">
-        <g transform="rotate(-8 50 55)">
+        <g transform="translate(50,55) scale(0.82,1.18) translate(-50,-55) rotate(-8 50 55)">
           <path class="brand-ghost-wisp" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
           <path class="brand-ghost-body" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
           <ellipse class="brand-ghost-eye" cx="39" cy="36" rx="7.5" ry="9.5"/>
@@ -515,7 +519,7 @@
 </footer>
 </div>
 
-<script src="data.js?v=6"></script>
-<script src="app.js?v=6"></script>
+<script src="data.js?v=9"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
