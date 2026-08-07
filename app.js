@@ -51,7 +51,7 @@ function boot(){
         document.getElementById('app').classList.add('on');
         setTimeout(()=>document.getElementById('boot').style.display='none', 800);
         initEverything();
-      }, 1800);
+      }, 2600);
     }
   };
   step();
