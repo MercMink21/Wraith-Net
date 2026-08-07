@@ -132,7 +132,18 @@ a{color:inherit;}
 #bstat{font-family:'Oxanium',sans-serif;font-size:9px;letter-spacing:3px;color:var(--mu);margin-top:4px;}
 
 /* ══ HEADER ══ */
-#hdr{position:sticky;top:0;z-index:1000;background:linear-gradient(180deg,#01040a 0%,rgba(3,6,13,.96) 100%);border-bottom:1px solid var(--bc1);backdrop-filter:blur(6px);}
+#hdr{position:sticky;top:0;z-index:1000;background:linear-gradient(180deg,#01040a 0%,rgba(3,6,13,.96) 100%);border-bottom:1px solid var(--bc1);backdrop-filter:blur(6px);overflow:hidden;}
+/* "Wing" accent — a nod to the Oregon eggshell uniform's feather motif,
+   translated to our palette as two diagonal chevron sweeps behind the
+   wordmark rather than a literal feather graphic. */
+#hdr::before{
+  content:'';position:absolute;top:-20%;left:50%;width:160%;height:140%;
+  transform:translateX(-50%) skewY(-3deg);pointer-events:none;z-index:0;
+  background:
+    linear-gradient(100deg,transparent 44%,rgba(79,195,255,.06) 46%,rgba(79,195,255,.10) 48%,transparent 50%),
+    linear-gradient(100deg,transparent 52%,rgba(255,45,78,.05) 54%,rgba(255,45,78,.09) 56%,transparent 58%);
+}
+#hdr > *{position:relative;z-index:1;}
 .htop{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px 18px 8px;gap:5px;}
 .logo-row{display:flex;align-items:center;justify-content:center;gap:14px;}
 #globe-icon-btn{width:32px;height:50px;flex-shrink:0;cursor:pointer;overflow:visible;}
@@ -222,7 +233,13 @@ a{color:inherit;}
 .col{display:flex;flex-direction:column;gap:14px;}
 
 /* ══ PANELS ══ */
-.pnl{background:var(--panel);border:1px solid var(--bc1);border-radius:3px;overflow:hidden;position:relative;transition:border-color .25s,box-shadow .25s;}
+.pnl{
+  background-color:var(--panel);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-blend-mode:overlay;
+  background-size:auto,140px 140px;
+  border:1px solid var(--bc1);border-radius:3px;overflow:hidden;position:relative;transition:border-color .25s,box-shadow .25s;
+}
 .pnl::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.45;}
 .pnl.r::before{background:linear-gradient(90deg,transparent,var(--r),transparent);}
 .pnl.g::before{background:linear-gradient(90deg,transparent,var(--g),transparent);}
