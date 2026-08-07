@@ -110,6 +110,7 @@ const REDDIT_SUBS = [
   { sub:'LessCredibleDefence', label:'r/LESSCREDIBLEDEFENCE' },
   { sub:'internationalpolitics', label:'r/INTERNATIONALPOLITICS' },
   { sub:'combatfootage',    label:'r/COMBATFOOTAGE' },
+  { sub:'WarCollege',       label:'r/WARCOLLEGE' },
 ];
 
 /* ---- Crypto (CoinGecko free API, CORS-open, no key) ---- */

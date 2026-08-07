@@ -7,54 +7,18 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 /* ---------------------------------------------------------------------
-   BOOT SEQUENCE
+   BOOT SEQUENCE — no log lines or progress bar anymore; the ghost/title
+   flicker-in and the speckle background filling in ARE the loading cue.
+   Single fixed-length hold (no per-frame DOM writes) keeps this light.
 --------------------------------------------------------------------- */
-const BOOT_LINES = [
-  'INITIALIZING WRAITH//NET CORE...',
-  'LOADING CRYPTOGRAPHIC HANDSHAKE... <span class="ok">OK</span>',
-  'ESTABLISHING FEED RELAYS (RSS/REDDIT/WIKI)... <span class="ok">OK</span>',
-  'CALIBRATING GLOBE PROJECTION... <span class="ok">OK</span>',
-  'SYNCING WORLD CLOCKS (7 ZONES)... <span class="ok">OK</span>',
-  'ARMING THREAT MATRIX... <span class="ok">OK</span>',
-  'LOADING CURATED REFERENCE ARCHIVES... <span class="ok">OK</span>',
-  'ALL SYSTEMS NOMINAL.',
-];
 function boot(){
-  const log = document.getElementById('boot-log');
-  const bar = document.getElementById('bbar');
-  const pct = document.getElementById('bpct');
-  const stat = document.getElementById('bstat');
-  let i = 0;
-  BOOT_LINES.forEach(l=>{
-    const d = document.createElement('div');
-    d.className = 'bline';
-    d.innerHTML = '&gt; ' + l;
-    log.appendChild(d);
-  });
-  const lines = log.querySelectorAll('.bline');
-  const step = ()=>{
-    if(i < lines.length){
-      lines[i].classList.add('on');
-      const p = Math.round(((i+1)/lines.length)*100);
-      bar.style.width = p+'%';
-      pct.textContent = p+'%';
-      stat.textContent = i===lines.length-1 ? 'READY' : 'BOOTING SUBSYSTEMS...';
-      i++;
-      setTimeout(step, 260);
-    } else {
-      // hold on the finished boot log long enough for the ghost to fully
-      // materialize (3.8s) + eyes pop in (4.3s) + a beat of idle float
-      // before revealing the app — otherwise the animation gets cut off.
-      setTimeout(()=>{
-        document.getElementById('boot').style.transition = 'opacity .8s';
-        document.getElementById('boot').style.opacity = '0';
-        document.getElementById('app').classList.add('on');
-        setTimeout(()=>document.getElementById('boot').style.display='none', 800);
-        initEverything();
-      }, 2600);
-    }
-  };
-  step();
+  setTimeout(()=>{
+    document.getElementById('boot').style.transition = 'opacity .7s';
+    document.getElementById('boot').style.opacity = '0';
+    document.getElementById('app').classList.add('on');
+    setTimeout(()=>document.getElementById('boot').style.display='none', 700);
+    initEverything();
+  }, 3300);
 }
 
 /* ---------------------------------------------------------------------
