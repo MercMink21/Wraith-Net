@@ -297,6 +297,11 @@ a{color:inherit;}
 .tmet{flex:1;height:6px;background:rgba(255,255,255,.04);border-radius:2px;overflow:hidden;}
 .tfill{height:100%;border-radius:2px;transition:width 1s ease;}
 .tpct{font-family:'VT323',monospace;font-size:19.5px;width:38px;text-align:right;flex-shrink:0;}
+.tbar-row{cursor:pointer;}
+.tbar-row:hover .tbar-l{color:var(--white);}
+.hotspot-feed{padding:2px 0 12px 8px;margin-bottom:4px;border-left:2px solid var(--bc1);}
+.hotspot-feed .ni{padding:7px 0 7px 8px;}
+.hotspot-feed .ni-t{font-size:14px;}
 
 /* ══ LINK CARDS ══ */
 .lcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:9px;}

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="30%" cy="50%" r="75%">
+      <stop offset="0%" stop-color="#0d2138"/>
+      <stop offset="100%" stop-color="#03060d"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <line x1="0" y1="0" x2="1200" y2="0" stroke="#4fc3ff" stroke-width="6"/>
+  <line x1="0" y1="624" x2="1200" y2="624" stroke="#ff2d4e" stroke-width="6"/>
+
+  <g transform="translate(120,95) scale(4.4)">
+    <path d="M30,4 C20,4 14,12 14,28 L14,88 L19,76 L22,90 L26,78 L29,92 L32,78 L36,88 C38,76 40,62 40,28 C40,12 36,4 30,4 Z"
+      fill="rgba(79,195,255,0.30)" stroke="#8fe0ff" stroke-width="1.6"/>
+    <ellipse cx="22" cy="24" rx="4.6" ry="6.2" fill="#ff2d4e" transform="rotate(-10 22 24)"/>
+    <ellipse cx="31" cy="21" rx="4.1" ry="5.7" fill="#ff2d4e" transform="rotate(-10 31 21)"/>
+  </g>
+
+  <text x="430" y="290" font-family="Menlo, Consolas, monospace" font-size="86" font-weight="700" letter-spacing="10" fill="#4fc3ff">WRAITH<tspan fill="#ff2d4e">//</tspan>NET</text>
+  <text x="432" y="345" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" letter-spacing="4" fill="#ff5c78">VIDE QUOD ALII VIDERE NON POSSUNT</text>
+  <text x="432" y="400" font-family="Arial, Helvetica, sans-serif" font-size="24" letter-spacing="3" fill="#5c7896">OPEN SOURCE INTELLIGENCE TERMINAL</text>
+
+  <g font-family="Arial, Helvetica, sans-serif" font-size="20" letter-spacing="2" fill="#3d5c7d">
+    <circle cx="440" cy="470" r="6" fill="#4fc3ff"/>
+    <text x="456" y="477">FEEDS LIVE</text>
+    <circle cx="620" cy="470" r="6" fill="#3dffb0"/>
+    <text x="636" y="477">MARKETS LIVE</text>
+    <circle cx="820" cy="470" r="6" fill="#ff2d4e"/>
+    <text x="836" y="477">THREAT WATCH</text>
+  </g>
+</svg>

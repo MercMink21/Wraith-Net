@@ -57,6 +57,8 @@ const RSS_FEEDS = {
     { name:'NPR NATIONAL',   url:'https://feeds.npr.org/1003/rss.xml' },
     { name:'GUARDIAN US',    url:'https://www.theguardian.com/us-news/rss' },
     { name:'AP-ALT (NPR POLITICS)', url:'https://feeds.npr.org/1014/rss.xml' },
+    { name:'POLITICO',       url:'https://rss.politico.com/politics-news.xml' },
+    { name:'REALCLEARPOLITICS', url:'https://www.realclearpolitics.com/index.xml' },
   ],
   defense: [
     { name:'BREAKING DEFENSE', url:'https://breakingdefense.com/feed/' },
@@ -89,6 +91,10 @@ const RSS_FEEDS = {
     { name:'VENTUREBEAT — AI', url:'https://venturebeat.com/category/ai/feed/' },
     { name:'ARS TECHNICA — AI', url:'https://arstechnica.com/ai/feed/' },
     { name:'HACKER NEWS — "AI" SEARCH', url:'https://hnrss.org/newest?q=AI+OR+LLM+OR+%22machine+learning%22' },
+  ],
+  dataviz: [
+    { name:'VISUAL CAPITALIST', url:'https://www.visualcapitalist.com/feed/' },
+    { name:'OUR WORLD IN DATA', url:'https://ourworldindata.org/atom.xml' },
   ],
 };
 

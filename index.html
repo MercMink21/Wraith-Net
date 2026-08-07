@@ -9,12 +9,27 @@
 <meta name="apple-mobile-web-app-title" content="WRAITH//NET">
 <meta name="theme-color" content="#03060d">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-16.png" type="image/png" sizes="16x16">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>WRAITH//NET — OSINT INTELLIGENCE TERMINAL</title>
+<meta name="description" content="WRAITH//NET — a live OSINT and geopolitics intelligence terminal: world clocks, news wires, market data, an interactive globe, and conflict tracking.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="WRAITH//NET — OSINT Intelligence Terminal">
+<meta property="og:description" content="Vide quod alii videre non possunt. Live news wires, world clocks, markets, and conflict tracking in one terminal.">
+<meta property="og:image" content="https://mercmink21.github.io/Wraith-Net/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://mercmink21.github.io/Wraith-Net/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WRAITH//NET — OSINT Intelligence Terminal">
+<meta name="twitter:description" content="Vide quod alii videre non possunt. Live news wires, world clocks, markets, and conflict tracking in one terminal.">
+<meta name="twitter:image" content="https://mercmink21.github.io/Wraith-Net/og-image.png">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oxanium:wght@400;500;600;700;800&family=VT323&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="style.css?v=27">
+<link rel="stylesheet" href="style.css?v=28">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
@@ -192,7 +207,7 @@
         <div class="pb"><div class="feed" id="feed-wire" style="max-height:560px;"></div></div>
       </div>
       <div class="pnl">
-        <div class="ph"><div class="pt">⌂ DOMESTIC (US) — NPR / GUARDIAN US</div>
+        <div class="ph"><div class="pt">⌂ DOMESTIC (US) — NPR / GUARDIAN / POLITICO / RCP</div>
           <button class="rbtn" onclick="loadFeedGroup('feed-domestic', RSS_FEEDS.domestic, 'tc')">↻</button>
         </div>
         <div class="pb"><div class="feed" id="feed-domestic" style="max-height:560px;"></div></div>
@@ -314,6 +329,39 @@
       <div class="feed" id="google-trends" style="max-height:340px;"></div>
     </div>
   </div>
+
+  <div class="pnl gap">
+    <div class="ph"><div class="pt">▤ GLOBAL DATA — OUR WORLD IN DATA / VISUAL CAPITALIST</div>
+      <button class="rbtn" onclick="loadFeedGroup('feed-dataviz', RSS_FEEDS.dataviz, 'tc')">↻ REFRESH</button>
+    </div>
+    <div class="pb">
+      <div class="ref-note" style="margin-bottom:12px;">Interactive charts are live embeds from Our World in Data's Grapher tool (free, no key). The feed below pulls the latest published pieces from Our World in Data and Visual Capitalist — Visual Capitalist's format is infographic-heavy, so open the link for the full visual.</div>
+      <div class="g2">
+        <div class="emb" style="height:340px;">
+          <div class="emblbl">MILITARY EXPENDITURE — % OF GDP</div>
+          <iframe src="https://ourworldindata.org/grapher/military-expenditure-share-gdp" height="340" loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="emb" style="height:340px;">
+          <div class="emblbl">NUCLEAR WARHEAD STOCKPILES</div>
+          <iframe src="https://ourworldindata.org/grapher/nuclear-warhead-stockpiles" height="340" loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="emb" style="height:340px;">
+          <div class="emblbl">NUMBER OF ARMED CONFLICTS</div>
+          <iframe src="https://ourworldindata.org/grapher/number-of-armed-conflicts" height="340" loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="emb" style="height:340px;">
+          <div class="emblbl">REFUGEE POPULATION BY ASYLUM COUNTRY</div>
+          <iframe src="https://ourworldindata.org/grapher/refugee-population-by-country-or-territory-of-asylum" height="340" loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+      </div>
+      <div class="feed gap" id="feed-dataviz" style="max-height:420px;"></div>
+      <div class="lcards gap">
+        <a class="lcard" href="https://ourworldindata.org" target="_blank"><div class="lcard-name">OUR WORLD IN DATA</div><div class="lcard-desc">Full chart library</div></a>
+        <a class="lcard" href="https://www.visualcapitalist.com" target="_blank"><div class="lcard-name">VISUAL CAPITALIST</div><div class="lcard-desc">Infographics &amp; data journalism</div></a>
+      </div>
+    </div>
+  </div>
+
   <div class="ref-note gap" style="margin-bottom:12px;">Geopolitics explainers below — what each development is, why it matters, and its implications. Structural/durable reference; open the live tracker link for current status.</div>
   <div class="filter-row" id="trend-filter" data-target="trend-explainers"></div>
   <div id="trend-explainers"></div>
@@ -578,7 +626,7 @@
 </footer>
 </div>
 
-<script src="data.js?v=20"></script>
-<script src="app.js?v=27"></script>
+<script src="data.js?v=21"></script>
+<script src="app.js?v=29"></script>
 </body>
 </html>

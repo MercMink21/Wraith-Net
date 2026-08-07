@@ -352,7 +352,7 @@ async function loadFeedGroup(containerId, feeds, tagClass, limit=14){
   let merged = [];
   results.forEach(r=>{ if(r.status==='fulfilled') merged = merged.concat(r.value); });
   merged.sort((a,b)=> new Date(b.date||0) - new Date(a.date||0));
-  ALL_HEADLINES = ALL_HEADLINES.concat(merged.map(m=>m.title));
+  ALL_HEADLINES = ALL_HEADLINES.concat(merged);
 
   // Cap how many items any one source can occupy in the visible list --
   // a high-frequency feed (e.g. a Google News search) will otherwise fill
@@ -389,7 +389,7 @@ async function loadReddit(sub, containerId){
   try{
     const txt = await fetchViaProxies('https://www.reddit.com/r/'+sub+'/.rss');
     const items = parseFeedXML(txt, 'r/'+sub);
-    ALL_HEADLINES = ALL_HEADLINES.concat(items.map(i=>i.title));
+    ALL_HEADLINES = ALL_HEADLINES.concat(items);
     renderFeed(containerId, items, 'tc', 'r/'+sub);
   }catch(e){
     if(el) el.innerHTML = `<div class="err-txt">X — REDDIT UNREACHABLE VIA PROXY. <a href="https://www.reddit.com/r/${sub}/" target="_blank" style="color:var(--c)">Open r/${sub} directly ↗</a></div>`;
@@ -610,15 +610,15 @@ function generateDailySynopsis(){
     return;
   }
   const freq = {};
-  ALL_HEADLINES.forEach(title=>{
-    title.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).forEach(w=>{
+  ALL_HEADLINES.forEach(item=>{
+    item.title.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).forEach(w=>{
       if(w.length>3 && !STOPWORDS.has(w)) freq[w] = (freq[w]||0)+1;
     });
   });
   const topWords = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,12);
 
   const detectedThemes = THEME_MAP.filter(t=>
-    t.kw.some(k=> ALL_HEADLINES.some(h=>h.toLowerCase().includes(k)))
+    ALL_HEADLINES.some(h=> kwMatch(h.title.toLowerCase(), t.kw))
   );
 
   const themeHtml = detectedThemes.length ? detectedThemes.map(t=>`
@@ -646,20 +646,54 @@ function generateDailySynopsis(){
 }
 window.generateDailySynopsis = generateDailySynopsis;
 
+/* Word-boundary keyword match -- plain .includes() lets short codes like
+   'pla' (PLA, Taiwan Strait) or 'xi' match inside unrelated words ("plans",
+   "taxi"), which silently mis-routes headlines to the wrong hotspot/topic. */
+function kwMatch(text, keywords){
+  return keywords.some(k=>{
+    const esc = k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    return new RegExp('(?:^|[^a-z0-9])'+esc+'(?:[^a-z0-9]|$)','i').test(text);
+  });
+}
+
 /* ---------------------------------------------------------------------
    CONFLICT MONITOR — live mention-count per hotspot, derived from
    whatever headlines have actually been pulled this session. This is
    a real-time signal layered on the curated hotspot list, not itself
-   a live intelligence feed.
+   a live intelligence feed. Each hotspot's matched headlines are kept
+   (not just counted) so a bar can be expanded to show what's actually
+   funneling into it — real regional/keyword routing, not just a tally.
 --------------------------------------------------------------------- */
+function dedupeHeadlines(items){
+  const seen = new Set();
+  return items.filter(it=>{
+    const k = it.title.toLowerCase();
+    if(seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  }).sort((a,b)=> new Date(b.date||0) - new Date(a.date||0));
+}
 function computeConflictMentions(){
   return GLOBE_HOTSPOTS.map(h=>{
-    const count = ALL_HEADLINES.reduce((n,title)=>{
-      const t = title.toLowerCase();
-      return n + (h.keywords.some(k=>t.includes(k)) ? 1 : 0);
-    }, 0);
-    return { name:h.name, sev:h.sev, count };
+    const items = dedupeHeadlines(ALL_HEADLINES.filter(item=>
+      kwMatch(item.title.toLowerCase(), h.keywords)
+    ));
+    return { name:h.name, sev:h.sev, count:items.length, items };
   }).sort((a,b)=>b.count-a.count);
+}
+let __conflictOpen = null;
+function toggleHotspotHeadlines(name){
+  __conflictOpen = (__conflictOpen === name) ? null : name;
+  renderConflictMonitor();
+}
+window.toggleHotspotHeadlines = toggleHotspotHeadlines;
+function renderRoutedHeadlines(items, emptyMsg){
+  if(!items.length) return `<div class="hotspot-feed"><div class="ref-note">${emptyMsg}</div></div>`;
+  return `<div class="hotspot-feed">${items.slice(0,8).map(it=>`
+    <div class="ni" onclick="event.stopPropagation();window.open('${(it.link||'#').replace(/'/g,"%27")}','_blank')">
+      <div class="ni-t">${it.title}</div>
+      <div class="ni-m"><span class="tag tc">${it.source}</span>${it.date?`<span>${timeAgo(it.date)}</span>`:''}</div>
+    </div>`).join('')}</div>`;
 }
 function renderConflictMonitor(){
   const el = document.getElementById('conflict-monitor');
@@ -670,13 +704,17 @@ function renderConflictMonitor(){
   }
   const mentions = computeConflictMentions();
   const max = Math.max(1, ...mentions.map(m=>m.count));
-  el.innerHTML = mentions.map(m=>`
-    <div class="tbar">
-      <div class="tbar-l">${m.name}</div>
+  el.innerHTML = mentions.map(m=>{
+    const open = __conflictOpen === m.name;
+    return `
+    <div class="tbar tbar-row" onclick="toggleHotspotHeadlines('${m.name.replace(/'/g,"\\'")}')">
+      <div class="tbar-l">${open?'▾':'▸'} ${m.name}</div>
       <div class="tmet"><div class="tfill" style="width:${(m.count/max*100).toFixed(0)}%;background:${sevColor(m.sev)};box-shadow:0 0 6px ${sevColor(m.sev)}"></div></div>
       <div class="tpct" style="color:${sevColor(m.sev)}">${m.count}</div>
-    </div>`).join('') +
-    `<div class="ref-note gap">Live mention count of each hotspot's keywords across ${ALL_HEADLINES.length} headlines pulled this session (not a global media-volume index — only reflects what WRAITH//NET has fetched).</div>`;
+    </div>
+    ${open ? renderRoutedHeadlines(m.items, 'No matching headlines fetched yet for this hotspot.') : ''}`;
+  }).join('') +
+    `<div class="ref-note gap">Live mention count of each hotspot's keywords across ${ALL_HEADLINES.length} headlines pulled this session — click a hotspot to see which headlines are funneling into it (not a global media-volume index, only reflects what WRAITH//NET has fetched).</div>`;
 }
 window.renderConflictMonitor = renderConflictMonitor;
 
@@ -685,13 +723,18 @@ window.renderConflictMonitor = renderConflictMonitor;
 --------------------------------------------------------------------- */
 function computeTechMentions(){
   return TECH_TOPICS.map(t=>{
-    const count = ALL_HEADLINES.reduce((n,title)=>{
-      const lt = title.toLowerCase();
-      return n + (t.keywords.some(k=>lt.includes(k)) ? 1 : 0);
-    }, 0);
-    return { name:t.name, count };
+    const items = dedupeHeadlines(ALL_HEADLINES.filter(item=>
+      kwMatch(item.title.toLowerCase(), t.keywords)
+    ));
+    return { name:t.name, count:items.length, items };
   }).sort((a,b)=>b.count-a.count);
 }
+let __techOpen = null;
+function toggleTechHeadlines(name){
+  __techOpen = (__techOpen === name) ? null : name;
+  renderTechMonitor();
+}
+window.toggleTechHeadlines = toggleTechHeadlines;
 function renderTechMonitor(){
   const el = document.getElementById('tech-monitor');
   if(!el) return;
@@ -701,13 +744,17 @@ function renderTechMonitor(){
   }
   const mentions = computeTechMentions();
   const max = Math.max(1, ...mentions.map(m=>m.count));
-  el.innerHTML = mentions.map(m=>`
-    <div class="tbar">
-      <div class="tbar-l">${m.name}</div>
+  el.innerHTML = mentions.map(m=>{
+    const open = __techOpen === m.name;
+    return `
+    <div class="tbar tbar-row" onclick="toggleTechHeadlines('${m.name.replace(/'/g,"\\'")}')">
+      <div class="tbar-l">${open?'▾':'▸'} ${m.name}</div>
       <div class="tmet"><div class="tfill" style="width:${(m.count/max*100).toFixed(0)}%;background:var(--c);box-shadow:0 0 6px var(--c)"></div></div>
       <div class="tpct" style="color:var(--c)">${m.count}</div>
-    </div>`).join('') +
-    `<div class="ref-note gap">Live mention count of each topic's keywords across ${ALL_HEADLINES.length} headlines pulled this session (reflects what's been fetched, not total media volume).</div>`;
+    </div>
+    ${open ? renderRoutedHeadlines(m.items, 'No matching headlines fetched yet for this topic.') : ''}`;
+  }).join('') +
+    `<div class="ref-note gap">Live mention count of each topic's keywords across ${ALL_HEADLINES.length} headlines pulled this session — click a topic to see which headlines are funneling into it (reflects what's been fetched, not total media volume).</div>`;
 }
 window.renderTechMonitor = renderTechMonitor;
 
@@ -1163,6 +1210,7 @@ function initEverything(){
   setTimeout(()=>loadFeedGroup('feed-geo', RSS_FEEDS.geo, 'tc'), 6000);
   setTimeout(()=>loadFeedGroup('feed-tech', RSS_FEEDS.tech, 'tc'), 7400);
   setTimeout(()=>loadFeedGroup('feed-ai', RSS_FEEDS.ai, 'tr'), 8800);
+  setTimeout(()=>loadFeedGroup('feed-dataviz', RSS_FEEDS.dataviz, 'tc'), 10200);
   setTimeout(()=>loadStocks(), 1000);
 
   setTimeout(()=>{ generateDailySynopsis(); renderConflictMonitor(); renderTechMonitor(); }, 6000);
@@ -1187,6 +1235,7 @@ function initEverything(){
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-defense', RSS_FEEDS.defense, 'tr')), 300000);  // 5 min
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-tech', RSS_FEEDS.tech, 'tc')), 300000);        // 5 min
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-ai', RSS_FEEDS.ai, 'tr')), 300000);            // 5 min
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-dataviz', RSS_FEEDS.dataviz, 'tc')), 900000);  // 15 min (low-frequency publishers)
   setInterval(()=>refreshIfVisible(()=>{ generateDailySynopsis(); renderConflictMonitor(); renderTechMonitor(); }), 300000);   // 5 min
 }
 
