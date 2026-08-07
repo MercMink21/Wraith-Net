@@ -10,16 +10,57 @@
    BOOT SEQUENCE — no log lines or progress bar anymore; the ghost/title
    flicker-in and the speckle background filling in ARE the loading cue.
    Single fixed-length hold (no per-frame DOM writes) keeps this light.
+
+   playBootAnimation() is split out from boot() and re-runnable, because
+   a plain DOMContentLoaded-only trigger only ever fires once per process.
+   On a browser back/forward (bfcache) restore -- or an iOS home-screen
+   PWA relaunch that resumes a suspended page instead of reloading it --
+   DOMContentLoaded never fires again, so the flicker/glitch would only
+   ever play the very first time. pageshow's `persisted` flag catches
+   that case and replays just the visual sequence, without re-running
+   initEverything() (which would duplicate intervals/listeners/fetches).
 --------------------------------------------------------------------- */
-function boot(){
+function playBootAnimation(){
+  const bootEl = document.getElementById('boot');
+  const appEl = document.getElementById('app');
+  if(!bootEl || !appEl) return;
+
+  bootEl.style.transition = '';
+  bootEl.style.opacity = '';
+  bootEl.style.display = '';
+  appEl.classList.remove('on');
+
+  // A completed CSS animation won't replay just because you reset styles --
+  // it has to be removed, the layout forced to settle (reflow), then
+  // reapplied so the browser treats it as a fresh run.
+  const animatedEls = [
+    document.getElementById('boot-title'),
+    document.getElementById('ghost-main'),
+    document.getElementById('ghost-trail1'),
+    document.getElementById('ghost-trail2'),
+    ...document.querySelectorAll('#ghost-main .ghost-body, #ghost-main .ghost-eye-glow'),
+  ].filter(Boolean);
+  animatedEls.forEach(el=>{ el.style.animation = 'none'; });
+  void bootEl.offsetWidth; // force reflow
+  animatedEls.forEach(el=>{ el.style.animation = ''; });
+
   setTimeout(()=>{
-    document.getElementById('boot').style.transition = 'opacity .7s';
-    document.getElementById('boot').style.opacity = '0';
-    document.getElementById('app').classList.add('on');
-    setTimeout(()=>document.getElementById('boot').style.display='none', 700);
-    initEverything();
+    bootEl.style.transition = 'opacity .7s';
+    bootEl.style.opacity = '0';
+    appEl.classList.add('on');
+    setTimeout(()=>{ bootEl.style.display = 'none'; }, 700);
   }, 5300);
 }
+
+let __appInitialized = false;
+function boot(){
+  playBootAnimation();
+  initEverything();
+  __appInitialized = true;
+}
+window.addEventListener('pageshow', e=>{
+  if(e.persisted && __appInitialized) playBootAnimation();
+});
 
 /* ---------------------------------------------------------------------
    MOUSE-REACTIVE BACKGROUND PARTICLE GRID
