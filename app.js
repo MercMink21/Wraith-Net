@@ -340,7 +340,7 @@ function renderFeed(containerId, items, tagClass, tagLabel, limit=14){
 let ALL_HEADLINES = []; // accumulated across feeds, used by daily synopsis
 
 const wait = ms => new Promise(r=>setTimeout(r, ms));
-async function loadFeedGroup(containerId, feeds, tagClass){
+async function loadFeedGroup(containerId, feeds, tagClass, limit=14){
   const el = document.getElementById(containerId);
   if(el) el.innerHTML = '<div class="loading-txt"><span class="spin">◌</span> PULLING LIVE FEEDS...</div>';
   // light stagger between feeds in the group — each feed now races all 3
@@ -353,8 +353,18 @@ async function loadFeedGroup(containerId, feeds, tagClass){
   results.forEach(r=>{ if(r.status==='fulfilled') merged = merged.concat(r.value); });
   merged.sort((a,b)=> new Date(b.date||0) - new Date(a.date||0));
   ALL_HEADLINES = ALL_HEADLINES.concat(merged.map(m=>m.title));
-  renderFeed(containerId, merged, tagClass);
-  return merged;
+
+  // Cap how many items any one source can occupy in the visible list --
+  // a high-frequency feed (e.g. a Google News search) will otherwise fill
+  // every recent slot and crowd out the other configured sources.
+  const perSourceCap = Math.max(2, Math.ceil(limit / feeds.length));
+  const seen = {};
+  const display = merged.filter(it=>{
+    seen[it.source] = (seen[it.source]||0) + 1;
+    return seen[it.source] <= perSourceCap;
+  });
+  renderFeed(containerId, display, tagClass, undefined, limit);
+  return display;
 }
 
 async function loadSingleRSS(containerId, url, name, tagClass){
@@ -1142,7 +1152,7 @@ function initEverything(){
   // live data — staggered on purpose: the free CORS proxies this relies on
   // (no-key by design) rate-limit hard under burst load, so spread the
   // initial requests out instead of firing them all at once.
-  loadSingleRSS('feed-cmd', RSS_FEEDS.wire[0].url, RSS_FEEDS.wire[0].name, 'tc');
+  loadFeedGroup('feed-cmd', RSS_FEEDS.wire, 'tc');
   loadCrypto();
   loadWeather();
   setTimeout(()=>loadFeedGroup('feed-wire', RSS_FEEDS.wire, 'tc'), 600);
@@ -1170,6 +1180,7 @@ function initEverything(){
   setInterval(()=>refreshIfVisible(loadWeather), 300000);             // 5 min
   setInterval(()=>refreshIfVisible(loadStocks), 180000);              // 3 min
   setInterval(()=>refreshIfVisible(loadWikiTrending), 1800000);       // 30 min (data itself is daily)
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-cmd', RSS_FEEDS.wire, 'tc')), 300000);         // 5 min
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-wire', RSS_FEEDS.wire, 'tc')), 300000);        // 5 min
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-domestic', RSS_FEEDS.domestic, 'tc')), 300000); // 5 min
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-geo', RSS_FEEDS.geo, 'tc')), 300000);          // 5 min
