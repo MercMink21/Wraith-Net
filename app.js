@@ -18,7 +18,7 @@ function boot(){
     document.getElementById('app').classList.add('on');
     setTimeout(()=>document.getElementById('boot').style.display='none', 700);
     initEverything();
-  }, 3300);
+  }, 5300);
 }
 
 /* ---------------------------------------------------------------------
