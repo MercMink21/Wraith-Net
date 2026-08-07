@@ -38,11 +38,17 @@ const WMO = {
 };
 
 /* ---- RSS sources (fetched live via CORS proxy) ----
-   Reuters killed its public RSS years ago, so "wire" uses outlets
-   that still publish open RSS with no key required. */
+   Reuters killed its own public RSS years ago, so "REUTERS" here is
+   pulled via a Google News RSS site: search — a real, documented,
+   no-key Google News feature (news.google.com/rss/search?q=site:X),
+   not a workaround of anything Reuters restricts; it surfaces Reuters'
+   own published headlines/links. The Economist's section feeds are
+   still genuinely public RSS, no key needed. */
 const RSS_FEEDS = {
   wire: [
+    { name:'REUTERS (VIA GOOGLE NEWS)', url:'https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-US&gl=US&ceid=US:en' },
     { name:'BBC WORLD',      url:'http://feeds.bbci.co.uk/news/world/rss.xml' },
+    { name:'THE ECONOMIST — INTERNATIONAL', url:'https://www.economist.com/international/rss.xml' },
     { name:'AL JAZEERA',     url:'https://www.aljazeera.com/xml/rss/all.xml' },
     { name:'THE GUARDIAN',   url:'https://www.theguardian.com/world/rss' },
     { name:'NPR WORLD',      url:'https://feeds.npr.org/1004/rss.xml' },
@@ -58,6 +64,10 @@ const RSS_FEEDS = {
     { name:'THE WAR ZONE',     url:'https://www.twz.com/feed' },
   ],
   geo: [
+    { name:'REUTERS WORLD (VIA GOOGLE NEWS)', url:'https://news.google.com/rss/search?q=site:reuters.com+world+when:1d&hl=en-US&gl=US&ceid=US:en' },
+    { name:'THE ECONOMIST — EUROPE', url:'https://www.economist.com/europe/rss.xml' },
+    { name:'THE ECONOMIST — MIDDLE EAST & AFRICA', url:'https://www.economist.com/middle-east-and-africa/rss.xml' },
+    { name:'THE ECONOMIST — CHINA', url:'https://www.economist.com/china/rss.xml' },
     { name:'FOREIGN POLICY',  url:'https://foreignpolicy.com/feed/' },
     { name:'AL JAZEERA',      url:'https://www.aljazeera.com/xml/rss/all.xml' },
     { name:'GUARDIAN WORLD',  url:'https://www.theguardian.com/world/rss' },
@@ -78,10 +88,14 @@ const CORS_PROXIES = [
 
 /* ---- Reddit (live via CORS proxy, .rss endpoints, no key/login) ---- */
 const REDDIT_SUBS = [
-  { sub:'worldnews',       label:'r/WORLDNEWS' },
-  { sub:'geopolitics',     label:'r/GEOPOLITICS' },
-  { sub:'OSINT',           label:'r/OSINT' },
-  { sub:'CredibleDefense', label:'r/CREDIBLEDEFENSE' },
+  { sub:'worldnews',        label:'r/WORLDNEWS' },
+  { sub:'geopolitics',      label:'r/GEOPOLITICS' },
+  { sub:'OSINT',            label:'r/OSINT' },
+  { sub:'CredibleDefense',  label:'r/CREDIBLEDEFENSE' },
+  { sub:'IntelligenceNews', label:'r/INTELLIGENCENEWS' },
+  { sub:'LessCredibleDefence', label:'r/LESSCREDIBLEDEFENCE' },
+  { sub:'internationalpolitics', label:'r/INTERNATIONALPOLITICS' },
+  { sub:'combatfootage',    label:'r/COMBATFOOTAGE' },
 ];
 
 /* ---- Crypto (CoinGecko free API, CORS-open, no key) ---- */
@@ -240,31 +254,40 @@ const DEFENSE_LINKS = [
 const GLOBE_HOTSPOTS = [
   { name:'UKRAINE', lat:49.0, lon:31.5, sev:'high', conf:'HIGH',
     brief:'Active conventional war between Russia and Ukraine, ongoing since Feb 2022. Frontline in the east/south, sustained strikes on infrastructure. Key indicators to watch: territorial movement, Western aid packages, mobilization on both sides.',
-    tags:['ACTIVE CONFLICT','NATO SUPPORT','ENERGY IMPACT'], link:'https://liveuamap.com/' },
+    tags:['ACTIVE CONFLICT','NATO SUPPORT','ENERGY IMPACT'], link:'https://liveuamap.com/',
+    keywords:['ukraine','kyiv','zelensky','kremlin','donbas','crimea','kharkiv'] },
   { name:'GAZA / ISRAEL', lat:31.5, lon:34.45, sev:'high', conf:'HIGH',
     brief:'Israel-Hamas conflict and broader regional friction involving Hezbollah (Lebanon) and Iran-aligned actors. Watch for ceasefire/hostage negotiations, humanitarian corridor status, and northern-border escalation risk.',
-    tags:['ACTIVE CONFLICT','HUMANITARIAN CRISIS','REGIONAL SPILLOVER'], link:'https://liveuamap.com/' },
+    tags:['ACTIVE CONFLICT','HUMANITARIAN CRISIS','REGIONAL SPILLOVER'], link:'https://liveuamap.com/',
+    keywords:['gaza','israel','hamas','idf','netanyahu','hezbollah','west bank','rafah'] },
   { name:'RED SEA / YEMEN', lat:14.5, lon:44.0, sev:'high', conf:'HIGH',
     brief:'Houthi attacks on commercial shipping through the Bab-el-Mandeb strait have disrupted Red Sea traffic, prompting U.S./UK naval responses. Watch shipping-lane diversions around the Cape of Good Hope and insurance-cost signals.',
-    tags:['MARITIME SECURITY','SHIPPING DISRUPTION'], link:'https://www.marinetraffic.com/' },
+    tags:['MARITIME SECURITY','SHIPPING DISRUPTION'], link:'https://www.marinetraffic.com/',
+    keywords:['houthi','yemen','red sea','bab-el-mandeb','aden'] },
   { name:'TAIWAN STRAIT', lat:24.0, lon:121.0, sev:'med', conf:'MEDIUM',
     brief:'PLA military pressure (air incursions, naval exercises) around Taiwan continues amid cross-strait tension. Watch for changes in ADIZ incursion frequency and U.S. arms-sale announcements.',
-    tags:['STRATEGIC COMPETITION','CHIP SUPPLY CHAIN'], link:'https://liveuamap.com/' },
+    tags:['STRATEGIC COMPETITION','CHIP SUPPLY CHAIN'], link:'https://liveuamap.com/',
+    keywords:['taiwan','taipei','pla','cross-strait','adiz'] },
   { name:'SOUTH CHINA SEA', lat:12.0, lon:114.0, sev:'med', conf:'MEDIUM',
     brief:'Overlapping territorial claims (China, Philippines, Vietnam, Malaysia) around reefs and shoals. Recurring friction points: Second Thomas Shoal resupply missions, coast-guard confrontations.',
-    tags:['TERRITORIAL DISPUTE','FREEDOM OF NAVIGATION'], link:'https://liveuamap.com/' },
+    tags:['TERRITORIAL DISPUTE','FREEDOM OF NAVIGATION'], link:'https://liveuamap.com/',
+    keywords:['south china sea','spratly','scarborough','second thomas shoal','philippines coast guard'] },
   { name:'KOREAN PENINSULA', lat:38.0, lon:127.0, sev:'med', conf:'MEDIUM',
     brief:'DPRK missile/weapons testing continues alongside deepening Russia-DPRK cooperation. Watch for satellite-launch attempts and joint U.S.-ROK exercise cycles.',
-    tags:['NUCLEAR PROLIFERATION','ALLIANCE POSTURE'], link:'https://liveuamap.com/' },
+    tags:['NUCLEAR PROLIFERATION','ALLIANCE POSTURE'], link:'https://liveuamap.com/',
+    keywords:['north korea','dprk','pyongyang','kim jong','south korea','seoul'] },
   { name:'SAHEL', lat:15.0, lon:2.0, sev:'med', conf:'MEDIUM',
     brief:'Coup-affected governments (Mali, Niger, Burkina Faso) have pivoted from Western partners toward Russian (Wagner/Africa Corps) security cooperation, amid ongoing jihadist insurgencies.',
-    tags:['INSURGENCY','GREAT POWER COMPETITION'], link:'https://liveuamap.com/' },
+    tags:['INSURGENCY','GREAT POWER COMPETITION'], link:'https://liveuamap.com/',
+    keywords:['mali','niger','burkina faso','sahel','wagner group','jnim'] },
   { name:'IRAN', lat:32.4, lon:53.7, sev:'med', conf:'MEDIUM',
     brief:'Nuclear-program status, proxy-network activity (Iraq, Syria, Lebanon, Yemen), and sanctions posture are the core watch items; direct Iran-Israel exchanges have occurred episodically.',
-    tags:['NUCLEAR PROGRAM','PROXY NETWORK'], link:'https://liveuamap.com/' },
+    tags:['NUCLEAR PROGRAM','PROXY NETWORK'], link:'https://liveuamap.com/',
+    keywords:['iran','tehran','irgc','khamenei','enrichment'] },
   { name:'BALTICS / NATO EASTERN FLANK', lat:56.9, lon:24.1, sev:'low', conf:'LOW',
     brief:'NATO forward-deployed battlegroups, periodic hybrid incidents (undersea cable damage, GPS jamming, airspace violations) attributed to Russian activity.',
-    tags:['HYBRID WARFARE','NATO POSTURE'], link:'https://liveuamap.com/' },
+    tags:['HYBRID WARFARE','NATO POSTURE'], link:'https://liveuamap.com/',
+    keywords:['baltic','estonia','latvia','lithuania','kaliningrad','nato eastern flank'] },
 ];
 
 /* Leaflet conflict-map markers mirror the globe hotspots */
@@ -272,6 +295,35 @@ const CONFLICT_MARKERS = GLOBE_HOTSPOTS;
 
 /* ---- Wikipedia trending config (live, wikimedia REST API, no key) ---- */
 const WIKI_PROJECT = 'en.wikipedia';
+
+/* Keyword list used to filter Wikipedia's "top viewed" list down to
+   world/politics/military/geopolitics/OSINT-relevant articles instead
+   of showing whatever pop-culture topic is trending that day. */
+const WIKI_RELEVANCE_KEYWORDS = [
+  // countries & regions frequently in geopolitical news
+  'ukraine','russia','russian','china','chinese','taiwan','israel','israeli','gaza','palestin','iran','iranian',
+  'north_korea','south_korea','korea','japan','india','pakistan','syria','yemen','lebanon','iraq','afghanistan',
+  'saudi','turkey','turkish','germany','france','poland','sudan','venezuela','mexico','united_kingdom','uk_',
+  'united_states','u.s.','nato','european_union','eu_','united_nations',
+  // conflict / military / security terms
+  'war','invasion','military','army','navy','missile','nuclear','airstrike','strike','conflict','ceasefire',
+  'sanction','coup','insurgen','terroris','troops','offensive','defense','defence','security_council',
+  'genocide','refugee','border','occupation','rebel','militia','drone','submarine','warship','carrier_strike',
+  // political / diplomatic terms
+  'president','prime_minister','election','government','parliament','congress','senate','diplomat','treaty',
+  'summit','minister','chancellor','regime','democracy','sovereignty','embassy','ambassador','coalition',
+  'geopolit','intelligence_agency','espionage','cyberattack','cyber_warfare','osint',
+  // key figures often in geopolitics headlines (kept short, generic surnames avoided)
+  'putin','zelensky','netanyahu','xi_jinping','biden','trump','khamenei','kim_jong',
+];
+
+/* Wikipedia articles/portals worth checking directly for a geopolitics
+   digest, independent of the pageviews-popularity filter above. */
+const WIKI_PORTALS = [
+  { name:'PORTAL: CURRENT EVENTS', url:'https://en.wikipedia.org/wiki/Portal:Current_events' },
+  { name:'ONGOING ARMED CONFLICTS', url:'https://en.wikipedia.org/wiki/List_of_ongoing_armed_conflicts' },
+  { name:'INTERNATIONAL RELATIONS', url:'https://en.wikipedia.org/wiki/Portal:International_relations' },
+];
 
 /* ---- Military asset / deployment posture — REFERENCE snapshot only.
    There is no free, no-key API that returns real military deployment
@@ -357,3 +409,124 @@ const SCENARIOS = {
   ],
 };
 const SCENARIOS_NOTE = 'These are illustrative if/then branches for orientation, not predictions or forecasts of what will happen. Likelihood labels are qualitative judgment calls, not statistical probabilities.';
+
+/* ---- TRADECRAFT: Intelligence collection disciplines ("the INTs").
+   Educational reference — general public knowledge, not operational
+   guidance. Each links to Wikipedia for deeper reading. ---- */
+const INTEL_TYPES = [
+  { abbr:'OSINT', name:'Open-Source Intelligence',
+    def:'Intelligence derived from publicly available information — news media, social media, satellite imagery, academic publications, government reports, and other unclassified sources.',
+    how:'Analysts collect, cross-reference, and verify information that anyone can legally access, then synthesize it to answer specific intelligence questions. Modern OSINT relies heavily on social media geolocation, satellite imagery analysis, and automated scraping/monitoring tools — which is the entire premise of a dashboard like this one.',
+    example:'Bellingcat identifying the Russian military unit responsible for downing MH17 by cross-referencing social media posts, satellite imagery, and vehicle convoy photos.',
+    wiki:'https://en.wikipedia.org/wiki/Open-source_intelligence' },
+  { abbr:'HUMINT', name:'Human Intelligence',
+    def:'Intelligence gathered from human sources through direct interpersonal contact — interrogation, debriefing, or clandestine recruitment of informants and agents.',
+    how:'Case officers recruit and run human sources (assets) who have access to information of intelligence value, or conduct direct elicitation/interrogation. It is the oldest form of intelligence collection and remains uniquely able to capture intent, not just capability.',
+    example:'A diplomat cultivating a foreign official as a long-term source who reports on internal government deliberations.',
+    wiki:'https://en.wikipedia.org/wiki/Human_intelligence_(intelligence_gathering)' },
+  { abbr:'SIGINT', name:'Signals Intelligence',
+    def:'Intelligence derived from intercepting electronic signals and communications — an umbrella category covering COMINT and ELINT.',
+    how:'Collection systems (ground stations, satellites, aircraft, ships) intercept radio, radar, and other electronic emissions, which are then decrypted and analyzed for content or technical characteristics.',
+    example:'The NSA/GCHQ ECHELON system intercepting satellite communications during the Cold War.',
+    wiki:'https://en.wikipedia.org/wiki/Signals_intelligence' },
+  { abbr:'COMINT', name:'Communications Intelligence',
+    def:'A subset of SIGINT focused specifically on intercepted communications between people — phone calls, radio traffic, messages.',
+    how:'Interception of voice or text communications, often followed by decryption (cryptanalysis) if the traffic is encrypted, then linguistic/content analysis.',
+    example:'Allied codebreakers at Bletchley Park decrypting German Enigma-encoded military communications in WWII.',
+    wiki:'https://en.wikipedia.org/wiki/Signals_intelligence#Communications_intelligence' },
+  { abbr:'ELINT', name:'Electronic Intelligence',
+    def:'A subset of SIGINT focused on non-communication electronic emissions — radar signals, weapons-system electronics — rather than spoken/written content.',
+    how:'Sensors detect and characterize the technical parameters of an emitter (frequency, pulse pattern) to identify what type of radar or system produced it, revealing capabilities and locations without needing to understand any "message."',
+    example:'Detecting and classifying a newly deployed air-defense radar system by its unique electronic signature.',
+    wiki:'https://en.wikipedia.org/wiki/Electronic_signals_intelligence' },
+  { abbr:'GEOINT', name:'Geospatial Intelligence',
+    def:'Intelligence derived from the analysis of imagery and geospatial information to describe, assess, and visually depict physical features and activities on Earth.',
+    how:'Combines satellite/aerial imagery (IMINT) with geospatial data (mapping, terrain analysis) to support analysis of military movements, infrastructure, or environmental change over time.',
+    example:'Commercial satellite imagery firms (e.g. Maxar, Planet Labs) tracking military vehicle buildups ahead of the 2022 Russian invasion of Ukraine.',
+    wiki:'https://en.wikipedia.org/wiki/Geospatial_intelligence' },
+  { abbr:'IMINT', name:'Imagery Intelligence',
+    def:'A subset of GEOINT focused specifically on the collection and analysis of visual imagery — photographic, radar, or infrared.',
+    how:'Imagery analysts examine satellite, drone, or aircraft-collected photos to identify objects, count equipment, or detect changes between images taken at different times.',
+    example:'U-2 spy plane photography that revealed Soviet missile installations during the 1962 Cuban Missile Crisis.',
+    wiki:'https://en.wikipedia.org/wiki/Imagery_intelligence' },
+  { abbr:'MASINT', name:'Measurement and Signature Intelligence',
+    def:'A technical intelligence discipline concerned with detecting, tracking, and identifying distinctive characteristics of fixed or dynamic target sources — often described as "everything that isn\'t IMINT or SIGINT."',
+    how:'Specialized sensors measure physical phenomena — seismic waves, radiation, acoustic signatures, chemical traces — to characterize weapons systems, nuclear tests, or industrial activity.',
+    example:'Seismic sensors detecting and estimating the yield of an underground nuclear weapons test.',
+    wiki:'https://en.wikipedia.org/wiki/Measurement_and_signature_intelligence' },
+  { abbr:'TECHINT', name:'Technical Intelligence',
+    def:'Intelligence derived from the collection and analysis of adversary equipment and technology — captured weapons, downed aircraft wreckage, seized electronics.',
+    how:'Captured or recovered materiel is physically examined ("exploited") by engineers and technical specialists to understand its capabilities, vulnerabilities, and manufacturing origin.',
+    example:'Analysis of downed Iranian-made Shahed drones in Ukraine to identify their components\' countries of origin.',
+    wiki:'https://en.wikipedia.org/wiki/Technical_intelligence' },
+  { abbr:'FININT', name:'Financial Intelligence',
+    def:'Intelligence derived from analysis of financial transactions and flows, used to track sanctions evasion, terrorism financing, and illicit networks.',
+    how:'Analysts trace money flows through banking records, shell companies, and cryptocurrency transactions to map financial networks and identify who is funding or profiting from an activity.',
+    example:'Tracking cryptocurrency wallets used to move funds evading international sanctions.',
+    wiki:'https://en.wikipedia.org/wiki/Financial_intelligence' },
+  { abbr:'CYBINT / DNINT', name:'Cyber / Digital Network Intelligence',
+    def:'Intelligence derived from cyberspace — network traffic, malware analysis, and digital infrastructure — used to attribute cyberattacks and map adversary digital operations.',
+    how:'Analysts examine malware code, network intrusion patterns, and infrastructure (domains, IPs, certificates) to attribute attacks to specific threat actors and understand their tradecraft.',
+    example:'Security researchers attributing the NotPetya ransomware outbreak to a Russian military intelligence unit based on code similarities and targeting patterns.',
+    wiki:'https://en.wikipedia.org/wiki/Cyber_threat_intelligence' },
+];
+
+/* ---- TRADECRAFT: Military tactics & doctrine.
+   Educational reference on named tactical/strategic concepts. ---- */
+const MILITARY_TACTICS = [
+  { name:'Guerrilla Warfare', category:'Irregular',
+    def:'A form of irregular warfare in which small, mobile groups use ambush, sabotage, and hit-and-run tactics against a larger, less-mobile conventional force.',
+    how:'Fighters avoid direct, sustained confrontation, instead striking vulnerable targets and quickly withdrawing before the enemy can respond in force — relying on speed, terrain knowledge, and often local civilian support.',
+    example:'Viet Cong tactics against U.S. forces during the Vietnam War.',
+    wiki:'https://en.wikipedia.org/wiki/Guerrilla_warfare' },
+  { name:'Pincer Movement (Double Envelopment)', category:'Maneuver',
+    def:'A maneuver in which forces attack an enemy simultaneously on both flanks, aiming to encircle and cut off its ability to retreat or receive supply.',
+    how:'Two friendly force elements advance around the enemy\'s flanks and link up behind it, trapping the enemy between converging pressure and cutting its lines of communication.',
+    example:'Hannibal\'s double envelopment of the Roman army at the Battle of Cannae (216 BC), still studied as a textbook example.',
+    wiki:'https://en.wikipedia.org/wiki/Pincer_movement' },
+  { name:'Blitzkrieg ("Lightning War")', category:'Maneuver',
+    def:'A doctrine emphasizing rapid, concentrated armored and air-supported thrusts to punch through enemy lines and disrupt command/logistics before a coherent defense can form.',
+    how:'Combined-arms spearheads (tanks, motorized infantry, close air support) bypass strongpoints rather than reducing them one by one, aiming for speed and psychological shock over attrition.',
+    example:'German operations against Poland (1939) and France (1940).',
+    wiki:'https://en.wikipedia.org/wiki/Blitzkrieg' },
+  { name:'Attrition Warfare', category:'Strategic',
+    def:'A strategy of wearing down an opponent through continuous losses in personnel and materiel, prioritizing cumulative damage over decisive maneuver.',
+    how:'Rather than seeking a single decisive battle, a force applies sustained pressure across multiple fronts/engagements, betting that the opponent\'s capacity to replace losses will fail first.',
+    example:'Trench warfare on the Western Front in WWI; large stretches of the Russia-Ukraine war\'s frontline fighting.',
+    wiki:'https://en.wikipedia.org/wiki/Attrition_warfare' },
+  { name:'Asymmetric Warfare', category:'Strategic',
+    def:'Conflict between belligerents of significantly different military capability or size, where the weaker side avoids direct force-on-force engagement.',
+    how:'The weaker actor exploits the stronger side\'s vulnerabilities (political will, cost sensitivity, civilian-population constraints) rather than competing directly on conventional military strength.',
+    example:'Insurgent IED campaigns against conventional occupying forces in Iraq and Afghanistan.',
+    wiki:'https://en.wikipedia.org/wiki/Asymmetric_warfare' },
+  { name:'Hybrid Warfare', category:'Strategic',
+    def:'A blended approach combining conventional military force, irregular tactics, cyberattacks, disinformation, and economic pressure below the threshold of open war.',
+    how:'A state or actor layers multiple tools — proxy militias, cyber operations, propaganda, economic coercion — to achieve strategic goals while maintaining plausible deniability and avoiding a clear casus belli for the opponent.',
+    example:'Russia\'s 2014 annexation of Crimea, combining unmarked ("little green men") troops, disinformation, and a rapid referendum.',
+    wiki:'https://en.wikipedia.org/wiki/Hybrid_warfare' },
+  { name:'Combined Arms', category:'Doctrine',
+    def:'The coordinated use of multiple military branches/capabilities (infantry, armor, artillery, air power) so each compensates for the others\' weaknesses.',
+    how:'Different force types are synchronized in time and space — e.g., artillery suppresses defenders while infantry advances under armor protection — so the enemy cannot counter one threat without becoming exposed to another.',
+    example:'NATO doctrine broadly, and Operation Desert Storm\'s coordinated air-ground campaign (1991).',
+    wiki:'https://en.wikipedia.org/wiki/Combined_arms' },
+  { name:'Flanking Maneuver', category:'Maneuver',
+    def:'An attack directed at the side (flank) of an enemy formation, which is typically less heavily defended than the front.',
+    how:'A force fixes the enemy\'s attention to its front while a second element maneuvers to strike from the side, where defensive preparation and mutual support are usually weaker.',
+    example:'A staple maneuver across military history, from ancient phalanx warfare to modern armored operations.',
+    wiki:'https://en.wikipedia.org/wiki/Flanking_maneuver' },
+  { name:'Scorched Earth', category:'Strategic',
+    def:'A strategy of destroying anything that might be useful to the enemy — crops, infrastructure, shelter — while retreating or defending territory.',
+    how:'A retreating force deliberately destroys resources in its own territory to deny the advancing enemy supplies, shelter, and local support, at significant cost to the retreating side\'s own population/economy.',
+    example:'Russian scorched-earth tactics against Napoleon\'s invasion in 1812.',
+    wiki:'https://en.wikipedia.org/wiki/Scorched_earth' },
+  { name:'Feint / Deception Operations', category:'Deception',
+    def:'A deliberate diversionary action intended to draw enemy attention and resources away from the actual point of attack.',
+    how:'Forces stage a visible, convincing but secondary attack or troop buildup to make the enemy commit reserves in the wrong place, while the real main effort strikes elsewhere.',
+    example:'Operation Fortitude — the fictitious "First U.S. Army Group" deception that convinced Germany the main D-Day landing would be at Calais, not Normandy.',
+    wiki:'https://en.wikipedia.org/wiki/Military_deception' },
+  { name:'Counterinsurgency (COIN)', category:'Doctrine',
+    def:'A comprehensive civil-military approach aimed at defeating an insurgency by combining military operations with efforts to win the political loyalty of the population.',
+    how:'Forces attempt to separate insurgents from their civilian support base through a mix of security operations, governance support, economic development, and information campaigns — "clear, hold, build."',
+    example:'U.S./coalition counterinsurgency doctrine (FM 3-24) applied in Iraq\'s 2007 troop "surge."',
+    wiki:'https://en.wikipedia.org/wiki/Counterinsurgency' },
+];

@@ -12,9 +12,9 @@
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>WRAITH//NET — OSINT INTELLIGENCE TERMINAL</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oxanium:wght@400;500;600;700;800&family=VT323&family=Major+Mono+Display&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=14">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
@@ -28,31 +28,26 @@
   <canvas id="boot-canvas"></canvas>
   <div id="boot-content">
     <div id="ghost-wrap">
-      <svg viewBox="0 0 100 110" class="ghost-copy" id="ghost-trail2">
-        <g transform="translate(50,55) scale(0.8,1.2) translate(-50,-55) rotate(-8 50 55)">
-          <path class="ghost-body" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
-        </g>
+      <svg viewBox="0 0 60 100" class="ghost-copy" id="ghost-trail2">
+        <path class="ghost-body" d="M30,4 C20,4 14,12 14,28 L14,88 L19,76 L22,90 L26,78 L29,92 L32,78 L36,88 C38,76 40,62 40,28 C40,12 36,4 30,4 Z"/>
       </svg>
-      <svg viewBox="0 0 100 110" class="ghost-copy" id="ghost-trail1">
-        <g transform="translate(50,55) scale(0.8,1.2) translate(-50,-55) rotate(-8 50 55)">
-          <path class="ghost-body" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
-        </g>
+      <svg viewBox="0 0 60 100" class="ghost-copy" id="ghost-trail1">
+        <path class="ghost-body" d="M30,4 C20,4 14,12 14,28 L14,88 L19,76 L22,90 L26,78 L29,92 L32,78 L36,88 C38,76 40,62 40,28 C40,12 36,4 30,4 Z"/>
       </svg>
-      <svg viewBox="0 0 100 110" class="ghost-copy" id="ghost-main">
+      <svg viewBox="0 0 60 100" class="ghost-copy" id="ghost-main">
         <defs>
           <linearGradient id="ghostGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#4fc3ff" stop-opacity=".5"/>
             <stop offset="100%" stop-color="#0a2a5e" stop-opacity=".35"/>
           </linearGradient>
         </defs>
-        <g transform="translate(50,55) scale(0.8,1.2) translate(-50,-55) rotate(-8 50 55)">
-          <path class="ghost-body" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
-          <ellipse class="ghost-eye-glow" cx="39" cy="36" rx="7.5" ry="9.5"/>
-          <ellipse class="ghost-eye-glow" cx="59" cy="32" rx="7" ry="9"/>
-        </g>
+        <path class="ghost-body" d="M30,4 C20,4 14,12 14,28 L14,88 L19,76 L22,90 L26,78 L29,92 L32,78 L36,88 C38,76 40,62 40,28 C40,12 36,4 30,4 Z"/>
+        <ellipse class="ghost-eye-glow" cx="22" cy="24" rx="4.5" ry="6" transform="rotate(-10 22 24)"/>
+        <ellipse class="ghost-eye-glow" cx="31" cy="21" rx="4" ry="5.5" transform="rotate(-10 31 21)"/>
       </svg>
     </div>
     <div id="boot-title">WRAITH<em>//</em>NET</div>
+    <div id="boot-motto">VIDE QUOD ALII VIDERE NON POSSUNT</div>
     <div id="boot-sub">OPEN SOURCE INTELLIGENCE TERMINAL · OPERATOR ACCESS</div>
     <div id="boot-log"></div>
     <div id="bbar-w"><div id="bbar"></div></div>
@@ -65,20 +60,16 @@
 <div id="app">
 <div id="hdr">
   <div class="htop">
-    <div class="logo-wrap">
-      <svg id="globe-icon-btn" viewBox="0 0 100 110" title="Jump to interactive globe">
-        <g transform="translate(50,55) scale(0.82,1.18) translate(-50,-55) rotate(-8 50 55)">
-          <path class="brand-ghost-wisp" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
-          <path class="brand-ghost-body" d="M54,6 C36,6 23,20 23,40 L23,82 L30,72 L33,85 L40,73 L44,86 L48,75 L52,84 C55,78 50,71 58,67 C66,83 82,80 77,64 C90,63 91,48 81,42 C85,25 70,6 54,6 Z"/>
-          <ellipse class="brand-ghost-eye" cx="39" cy="36" rx="7.5" ry="9.5"/>
-          <ellipse class="brand-ghost-eye" cx="59" cy="32" rx="7" ry="9"/>
-        </g>
+    <div class="logo-row">
+      <svg id="globe-icon-btn" viewBox="0 0 60 100" title="Jump to interactive globe">
+        <path class="brand-ghost-wisp" d="M30,4 C20,4 14,12 14,28 L14,88 L19,76 L22,90 L26,78 L29,92 L32,78 L36,88 C38,76 40,62 40,28 C40,12 36,4 30,4 Z"/>
+        <path class="brand-ghost-body" d="M30,4 C20,4 14,12 14,28 L14,88 L19,76 L22,90 L26,78 L29,92 L32,78 L36,88 C38,76 40,62 40,28 C40,12 36,4 30,4 Z"/>
+        <ellipse class="brand-ghost-eye" cx="22" cy="24" rx="4.5" ry="6" transform="rotate(-10 22 24)"/>
+        <ellipse class="brand-ghost-eye" cx="31" cy="21" rx="4" ry="5.5" transform="rotate(-10 31 21)"/>
       </svg>
-      <div>
-        <div class="logo">WRAITH<em>//</em>NET</div>
-        <div class="lsub">◈ OPEN SOURCE INTELLIGENCE TERMINAL ◈ OPERATOR ACCESS ONLY ◈ LIVE FEEDS + CURATED REFERENCE</div>
-      </div>
+      <div class="logo">WRAITH<em>//</em>NET</div>
     </div>
+    <div class="logo-motto">VIDE QUOD ALII VIDERE NON POSSUNT</div>
     <div class="hpills">
       <div class="hpill"><div class="dot c"></div>FEEDS LIVE</div>
       <div class="hpill"><div class="dot g"></div>MARKETS LIVE</div>
@@ -111,6 +102,7 @@
   <button class="tb" data-t="commands">⬣ REGIONS</button>
   <button class="tb" data-t="assets">⧉ ASSETS</button>
   <button class="tb" data-t="history">⟟ HISTORY</button>
+  <button class="tb" data-t="tradecraft">⌬ TRADECRAFT</button>
   <button class="tb" data-t="weather">◑ WEATHER</button>
   <button class="tb" data-t="reference">⟠ REFERENCE</button>
 </div>
@@ -151,6 +143,10 @@
           <div class="tbar"><div class="tbar-l">SUPPLY CHN</div><div class="tmet"><div class="tfill" style="width:46%;background:var(--y);box-shadow:0 0 6px var(--y)"></div></div><div class="tpct" style="color:var(--y)">46</div></div>
           <div class="ref-note"><b>NOTE:</b> Illustrative reference levels, not a live-computed index. See DAILY BRIEFING for feed-derived analysis.</div>
         </div>
+      </div>
+      <div class="pnl">
+        <div class="ph"><div class="pt">⌖ CONFLICT MONITOR — LIVE MENTIONS</div><span class="pbadge live">● LIVE</span></div>
+        <div class="pb" id="conflict-monitor"></div>
       </div>
       <div class="g2">
         <div class="stat"><div class="sv" id="st-crypto-count">6</div><div class="sl">CRYPTO TRACKED (LIVE)</div></div>
@@ -298,10 +294,23 @@
 <!-- ═══════════ TRENDING & ANALYSIS (Wiki + Geopolitics Trends) ═══════════ -->
 <div class="tp" id="tp-trending">
   <div class="pnl">
-    <div class="ph"><div class="pt">▦ WIKIPEDIA — TOP VIEWED ARTICLES (LIVE, WIKIMEDIA API)</div>
+    <div class="ph"><div class="pt">▦ WIKIPEDIA TRENDING — WORLD / GEOPOLITICS (LIVE, WIKIMEDIA API)</div>
       <button class="rbtn" onclick="loadWikiTrending()">↻ REFRESH</button>
     </div>
-    <div class="pb"><div class="feed" id="wiki-trending" style="max-height:420px;"></div></div>
+    <div class="pb">
+      <div class="feed" id="wiki-trending" style="max-height:420px;"></div>
+      <div class="lcards gap" id="wiki-portal-cards"></div>
+    </div>
+  </div>
+
+  <div class="pnl c gap">
+    <div class="ph c"><div class="pt">◈ SEARCH TRENDS — GOOGLE TRENDS DAILY (US)</div>
+      <button class="rbtn" onclick="loadGoogleTrends()">↻ REFRESH</button>
+    </div>
+    <div class="pb">
+      <div class="ref-note" style="margin-bottom:10px;">Note: real-time global search-interest data comes from Google <b>Trends</b>, not Google Analytics — Analytics only tracks visitors to a site you own (it couldn't show insight into general web searches). This pulls Google Trends' internal daily-trends endpoint, which is unofficial/undocumented and may break without notice.</div>
+      <div class="feed" id="google-trends" style="max-height:340px;"></div>
+    </div>
   </div>
   <div class="ref-note gap" style="margin-bottom:12px;">Geopolitics explainers below — what each development is, why it matters, and its implications. Structural/durable reference; open the live tracker link for current status.</div>
   <div class="filter-row" id="trend-filter" data-target="trend-explainers"></div>
@@ -433,6 +442,20 @@
   <div id="history-cards"></div>
 </div>
 
+<!-- ═══════════ TRADECRAFT (Intel disciplines + Tactics) ═══════════ -->
+<div class="tp" id="tp-tradecraft">
+  <div class="ref-note" style="margin-bottom:14px;">Educational reference on intelligence-collection disciplines and named military tactics/doctrine — general public knowledge, not operational guidance. Each entry links to Wikipedia for deeper reading.</div>
+  <div class="sec-switch">
+    <label>SECTION</label>
+    <select class="sec-select" data-group="tradecraft">
+      <option value="intel">INTELLIGENCE DISCIPLINES (THE INTs)</option>
+      <option value="tactics">MILITARY TACTICS &amp; DOCTRINE</option>
+    </select>
+  </div>
+  <div class="subpanel" data-group="tradecraft" data-key="intel" id="intel-types-cards"></div>
+  <div class="subpanel" data-group="tradecraft" data-key="tactics" style="display:none;" id="tactics-cards"></div>
+</div>
+
 <!-- ═══════════ WEATHER ═══════════ -->
 <div class="tp" id="tp-weather">
   <div class="pnl">
@@ -519,7 +542,7 @@
 </footer>
 </div>
 
-<script src="data.js?v=9"></script>
-<script src="app.js?v=9"></script>
+<script src="data.js?v=15"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>

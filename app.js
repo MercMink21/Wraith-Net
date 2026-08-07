@@ -40,15 +40,18 @@ function boot(){
       pct.textContent = p+'%';
       stat.textContent = i===lines.length-1 ? 'READY' : 'BOOTING SUBSYSTEMS...';
       i++;
-      setTimeout(step, 220);
+      setTimeout(step, 260);
     } else {
+      // hold on the finished boot log long enough for the ghost to fully
+      // materialize (3.8s) + eyes pop in (4.3s) + a beat of idle float
+      // before revealing the app — otherwise the animation gets cut off.
       setTimeout(()=>{
         document.getElementById('boot').style.transition = 'opacity .8s';
         document.getElementById('boot').style.opacity = '0';
         document.getElementById('app').classList.add('on');
         setTimeout(()=>document.getElementById('boot').style.display='none', 800);
         initEverything();
-      }, 400);
+      }, 1800);
     }
   };
   step();
@@ -411,17 +414,27 @@ function initRedditTab(){
 /* ---------------------------------------------------------------------
    WIKIPEDIA TRENDING (live, Wikimedia REST API, no key, CORS-open)
 --------------------------------------------------------------------- */
+function isGeoRelevant(articleTitle){
+  const t = articleTitle.toLowerCase();
+  return WIKI_RELEVANCE_KEYWORDS.some(k => t.includes(k));
+}
 async function loadWikiTrending(){
   const el = document.getElementById('wiki-trending');
-  el.innerHTML = '<div class="loading-txt"><span class="spin">◌</span> LOADING WIKIPEDIA TOP ARTICLES...</div>';
+  el.innerHTML = '<div class="loading-txt"><span class="spin">◌</span> LOADING WIKIPEDIA TRENDING (WORLD/POLITICS/GEOPOLITICS FILTER)...</div>';
   const d = new Date(Date.now() - 86400000*2); // 2 days ago — ensures data is finalized
   const y = d.getUTCFullYear(), m = String(d.getUTCMonth()+1).padStart(2,'0'), day = String(d.getUTCDate()).padStart(2,'0');
   const url = `https://wikimedia.org/api/rest_v1/metrics/pageviews/top/${WIKI_PROJECT}/all-access/${y}/${m}/${day}`;
   try{
     const res = await fetch(url);
     const j = await res.json();
-    const articles = (j.items?.[0]?.articles || []).filter(a=>!/^(Main_Page|Special:|Wikipedia:)/.test(a.article)).slice(0,20);
-    el.innerHTML = articles.map((a,i)=>`
+    const all = (j.items?.[0]?.articles || []).filter(a=>!/^(Main_Page|Special:|Wikipedia:|Talk:)/.test(a.article));
+    const relevant = all.filter(a=>isGeoRelevant(a.article)).slice(0,20);
+    const usingFallback = relevant.length < 5;
+    const list = usingFallback ? all.slice(0,20) : relevant;
+    const heading = usingFallback
+      ? '<div class="ref-note" style="margin-bottom:10px;">Few geopolitics-relevant articles were in today\'s overall top list — showing unfiltered top-viewed instead.</div>'
+      : '<div class="ref-note" style="margin-bottom:10px;">Filtered to world / politics / military / geopolitics / OSINT-relevant topics from today\'s top-viewed Wikipedia articles.</div>';
+    el.innerHTML = heading + list.map((a,i)=>`
       <div class="ni">
         <div class="ni-t"><span style="color:var(--r);font-family:'Orbitron',sans-serif;font-size:10px;">#${i+1}</span> ${a.article.replace(/_/g,' ')}</div>
         <div class="ni-m"><span class="tag tc">${a.views.toLocaleString()} VIEWS</span><a href="https://en.wikipedia.org/wiki/${a.article}" target="_blank" style="color:var(--mu);font-size:9px;">OPEN ARTICLE ↗</a></div>
@@ -430,6 +443,34 @@ async function loadWikiTrending(){
     el.innerHTML = '<div class="err-txt">X — WIKIMEDIA API UNREACHABLE. <a href="https://en.wikipedia.org/wiki/Special:RecentChanges" target="_blank" style="color:var(--c)">Open Wikipedia directly ↗</a></div>';
   }
 }
+
+/* ---------------------------------------------------------------------
+   GOOGLE TRENDS — daily search trends (US). Uses Google's internal
+   dailytrends endpoint, which is UNOFFICIAL/undocumented (no public API
+   exists for this) — via CORS proxy like the RSS feeds, with the same
+   ")]}'," JSONP-style prefix Google prepends stripped off. May break
+   without notice since it's not a supported API.
+--------------------------------------------------------------------- */
+async function loadGoogleTrends(){
+  const el = document.getElementById('google-trends');
+  if(!el) return;
+  el.innerHTML = '<div class="loading-txt"><span class="spin">◌</span> LOADING GOOGLE TRENDS...</div>';
+  try{
+    const txt = await fetchViaProxies('https://trends.google.com/trends/api/dailytrends?geo=US&hl=en-US', 14000);
+    const jsonText = txt.replace(/^\)\]\}'?,?\n?/, '').trim();
+    const j = JSON.parse(jsonText);
+    const searches = j.default?.trendingSearchesDays?.[0]?.trendingSearches || [];
+    if(!searches.length) throw new Error('empty trends payload');
+    el.innerHTML = searches.slice(0,18).map((s,i)=>`
+      <div class="ni">
+        <div class="ni-t"><span style="color:var(--c);font-family:'Orbitron',sans-serif;font-size:10px;">#${i+1}</span> ${s.title?.query || 'Unknown'}</div>
+        <div class="ni-m"><span class="tag tc">${s.formattedTraffic || ''} SEARCHES</span>${(s.articles?.[0]?.source) ? `<span>${s.articles[0].source}</span>`:''}</div>
+      </div>`).join('');
+  }catch(e){
+    el.innerHTML = '<div class="err-txt">X — GOOGLE TRENDS UNREACHABLE (unofficial endpoint — this happens). <a href="https://trends.google.com/trending?geo=US" target="_blank" style="color:var(--c)">Open Google Trends directly ↗</a></div>';
+  }
+}
+window.loadGoogleTrends = loadGoogleTrends;
 
 /* ---------------------------------------------------------------------
    WEATHER (live, Open-Meteo, no key, CORS-open)
@@ -608,6 +649,40 @@ function generateDailySynopsis(){
   if(ts) ts.textContent = 'GENERATED '+new Date().toLocaleTimeString()+' · LOCAL ANALYSIS';
 }
 window.generateDailySynopsis = generateDailySynopsis;
+
+/* ---------------------------------------------------------------------
+   CONFLICT MONITOR — live mention-count per hotspot, derived from
+   whatever headlines have actually been pulled this session. This is
+   a real-time signal layered on the curated hotspot list, not itself
+   a live intelligence feed.
+--------------------------------------------------------------------- */
+function computeConflictMentions(){
+  return GLOBE_HOTSPOTS.map(h=>{
+    const count = ALL_HEADLINES.reduce((n,title)=>{
+      const t = title.toLowerCase();
+      return n + (h.keywords.some(k=>t.includes(k)) ? 1 : 0);
+    }, 0);
+    return { name:h.name, sev:h.sev, count };
+  }).sort((a,b)=>b.count-a.count);
+}
+function renderConflictMonitor(){
+  const el = document.getElementById('conflict-monitor');
+  if(!el) return;
+  if(!ALL_HEADLINES.length){
+    el.innerHTML = '<div class="loading-txt">Waiting on live feeds — visit NEWS WIRE / REFERENCE (Defense) / SOCIAL (Reddit) tabs to populate this monitor.</div>';
+    return;
+  }
+  const mentions = computeConflictMentions();
+  const max = Math.max(1, ...mentions.map(m=>m.count));
+  el.innerHTML = mentions.map(m=>`
+    <div class="tbar">
+      <div class="tbar-l">${m.name}</div>
+      <div class="tmet"><div class="tfill" style="width:${(m.count/max*100).toFixed(0)}%;background:${sevColor(m.sev)};box-shadow:0 0 6px ${sevColor(m.sev)}"></div></div>
+      <div class="tpct" style="color:${sevColor(m.sev)}">${m.count}</div>
+    </div>`).join('') +
+    `<div class="ref-note gap">Live mention count of each hotspot's keywords across ${ALL_HEADLINES.length} headlines pulled this session (not a global media-volume index — only reflects what WRAITH//NET has fetched).</div>`;
+}
+window.renderConflictMonitor = renderConflictMonitor;
 
 /* ---------------------------------------------------------------------
    SEVERITY FILTER CHIPS — reusable across trend cards, conflict map, globe
@@ -818,6 +893,11 @@ function renderStaticSections(){
   const hc = document.getElementById('st-hotspot-count');
   if(hc) hc.textContent = GLOBE_HOTSPOTS.length;
 
+  // Wikipedia portals (current-events / conflicts / int'l relations)
+  const wpEl = document.getElementById('wiki-portal-cards');
+  if(wpEl) wpEl.innerHTML = WIKI_PORTALS.map(p=>`
+    <a class="lcard" href="${p.url}" target="_blank"><div class="lcard-name">${p.name}</div></a>`).join('');
+
   // OSINT X directory
   document.getElementById('osint-x-cards').innerHTML = OSINT_X_ACCOUNTS.map(a=>`
     <a class="lcard r" href="${a.url}" target="_blank">
@@ -887,6 +967,38 @@ function renderStaticSections(){
   initAssetsTab();
   initHistoryTab();
   initScenarioSection();
+  renderTradecraft();
+}
+
+/* ---------------------------------------------------------------------
+   TRADECRAFT — intelligence disciplines ("the INTs") + military tactics
+--------------------------------------------------------------------- */
+function renderTradecraft(){
+  const intelEl = document.getElementById('intel-types-cards');
+  if(intelEl) intelEl.innerHTML = INTEL_TYPES.map(t=>`
+    <div class="trend-card">
+      <div class="trend-title">${t.abbr} <span style="color:var(--mu);font-weight:normal;font-size:12px;">— ${t.name}</span></div>
+      <div class="brief-section-title">WHAT IT IS</div>
+      <div class="trend-body">${t.def}</div>
+      <div class="brief-section-title">HOW IT WORKS</div>
+      <div class="trend-body">${t.how}</div>
+      <div class="brief-section-title">EXAMPLE</div>
+      <div class="trend-body">${t.example}</div>
+      <div style="margin-top:10px;"><a href="${t.wiki}" target="_blank" style="color:var(--c);font-size:10px;">READ MORE ON WIKIPEDIA ↗</a></div>
+    </div>`).join('');
+
+  const tacEl = document.getElementById('tactics-cards');
+  if(tacEl) tacEl.innerHTML = MILITARY_TACTICS.map(t=>`
+    <div class="trend-card">
+      <div class="trend-title">${t.name} <span class="gtag" style="margin-left:8px;border-color:var(--bc2);color:var(--c);">${t.category.toUpperCase()}</span></div>
+      <div class="brief-section-title">WHAT IT IS</div>
+      <div class="trend-body">${t.def}</div>
+      <div class="brief-section-title">HOW IT WORKS</div>
+      <div class="trend-body">${t.how}</div>
+      <div class="brief-section-title">HISTORICAL EXAMPLE</div>
+      <div class="trend-body">${t.example}</div>
+      <div style="margin-top:10px;"><a href="${t.wiki}" target="_blank" style="color:var(--c);font-size:10px;">READ MORE ON WIKIPEDIA ↗</a></div>
+    </div>`).join('');
 }
 
 /* ---------------------------------------------------------------------
@@ -1018,12 +1130,13 @@ function initEverything(){
   loadWeather();
   setTimeout(()=>loadFeedGroup('feed-wire', RSS_FEEDS.wire, 'tc'), 600);
   setTimeout(()=>loadWikiTrending(), 1200);
+  setTimeout(()=>loadGoogleTrends(), 2400);
   setTimeout(()=>loadFeedGroup('feed-domestic', RSS_FEEDS.domestic, 'tc'), 3200);
   setTimeout(()=>loadFeedGroup('feed-defense', RSS_FEEDS.defense, 'tr'), 4600);
   setTimeout(()=>loadFeedGroup('feed-geo', RSS_FEEDS.geo, 'tc'), 6000);
   setTimeout(()=>loadStocks(), 1000);
 
-  setTimeout(generateDailySynopsis, 6000); // give feeds a head start before first synopsis pass
+  setTimeout(()=>{ generateDailySynopsis(); renderConflictMonitor(); }, 6000); // give feeds a head start first
 
   // periodic refresh — keeps the dashboard current without user action.
   // Intervals are spaced out (and skip entirely while the tab is in the
@@ -1037,7 +1150,7 @@ function initEverything(){
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-domestic', RSS_FEEDS.domestic, 'tc')), 600000); // 10 min
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-geo', RSS_FEEDS.geo, 'tc')), 600000);          // 10 min
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-defense', RSS_FEEDS.defense, 'tr')), 900000);  // 15 min
-  setInterval(()=>refreshIfVisible(generateDailySynopsis), 900000);  // 15 min
+  setInterval(()=>refreshIfVisible(()=>{ generateDailySynopsis(); renderConflictMonitor(); }), 900000);   // 15 min
 }
 
 document.addEventListener('DOMContentLoaded', boot);
