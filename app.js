@@ -1194,21 +1194,25 @@ function initEverything(){
   setTimeout(()=>{ generateDailySynopsis(); renderConflictMonitor(); renderTechMonitor(); }, 6000);
   setTimeout(()=>{ renderTechMonitor(); }, 9200); // catch up once tech/ai feeds land
 
-  // periodic refresh — keeps the dashboard current without user action.
-  // Intervals are spaced out (and skip entirely while the tab is in the
-  // background) so it doesn't hammer the free proxies/APIs this runs on.
+  // periodic refresh — "constantly up to date" means every-few-minutes for
+  // the sections that actually change that fast. Each RSS group keeps its
+  // own staggered start offset (set above) so a 5-min interval on all of
+  // them still doesn't fire as one simultaneous burst against the proxies.
+  // Wiki trending is the one exception — its underlying pageviews data is a
+  // daily aggregate that's already ~2 days old by the time it's published,
+  // so polling it faster than every 30 min can't surface anything newer.
   const refreshIfVisible = fn => { if(!document.hidden) fn(); };
-  setInterval(()=>refreshIfVisible(loadCrypto), 60000);              // 1 min
-  setInterval(()=>refreshIfVisible(loadWeather), 900000);            // 15 min
-  setInterval(()=>refreshIfVisible(loadStocks), 300000);             // 5 min
-  setInterval(()=>refreshIfVisible(loadWikiTrending), 3600000);      // 60 min
-  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-wire', RSS_FEEDS.wire, 'tc')), 600000);        // 10 min
-  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-domestic', RSS_FEEDS.domestic, 'tc')), 600000); // 10 min
-  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-geo', RSS_FEEDS.geo, 'tc')), 600000);          // 10 min
-  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-defense', RSS_FEEDS.defense, 'tr')), 900000);  // 15 min
-  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-tech', RSS_FEEDS.tech, 'tc')), 900000);        // 15 min
-  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-ai', RSS_FEEDS.ai, 'tr')), 900000);            // 15 min
-  setInterval(()=>refreshIfVisible(()=>{ generateDailySynopsis(); renderConflictMonitor(); renderTechMonitor(); }), 900000);   // 15 min
+  setInterval(()=>refreshIfVisible(loadCrypto), 60000);               // 1 min
+  setInterval(()=>refreshIfVisible(loadWeather), 300000);             // 5 min
+  setInterval(()=>refreshIfVisible(loadStocks), 180000);              // 3 min
+  setInterval(()=>refreshIfVisible(loadWikiTrending), 1800000);       // 30 min (data itself is daily)
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-wire', RSS_FEEDS.wire, 'tc')), 300000);        // 5 min
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-domestic', RSS_FEEDS.domestic, 'tc')), 300000); // 5 min
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-geo', RSS_FEEDS.geo, 'tc')), 300000);          // 5 min
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-defense', RSS_FEEDS.defense, 'tr')), 300000);  // 5 min
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-tech', RSS_FEEDS.tech, 'tc')), 300000);        // 5 min
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-ai', RSS_FEEDS.ai, 'tr')), 300000);            // 5 min
+  setInterval(()=>refreshIfVisible(()=>{ generateDailySynopsis(); renderConflictMonitor(); renderTechMonitor(); }), 300000);   // 5 min
 }
 
 document.addEventListener('DOMContentLoaded', boot);
