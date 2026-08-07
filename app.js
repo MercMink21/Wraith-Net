@@ -707,6 +707,37 @@ function renderConflictMonitor(){
 window.renderConflictMonitor = renderConflictMonitor;
 
 /* ---------------------------------------------------------------------
+   TECH TREND MONITOR — same pattern as Conflict Monitor, over TECH_TOPICS
+--------------------------------------------------------------------- */
+function computeTechMentions(){
+  return TECH_TOPICS.map(t=>{
+    const count = ALL_HEADLINES.reduce((n,title)=>{
+      const lt = title.toLowerCase();
+      return n + (t.keywords.some(k=>lt.includes(k)) ? 1 : 0);
+    }, 0);
+    return { name:t.name, count };
+  }).sort((a,b)=>b.count-a.count);
+}
+function renderTechMonitor(){
+  const el = document.getElementById('tech-monitor');
+  if(!el) return;
+  if(!ALL_HEADLINES.length){
+    el.innerHTML = '<div class="loading-txt">Waiting on live feeds — visit the GENERAL TECH / AI feed below to populate this monitor.</div>';
+    return;
+  }
+  const mentions = computeTechMentions();
+  const max = Math.max(1, ...mentions.map(m=>m.count));
+  el.innerHTML = mentions.map(m=>`
+    <div class="tbar">
+      <div class="tbar-l">${m.name}</div>
+      <div class="tmet"><div class="tfill" style="width:${(m.count/max*100).toFixed(0)}%;background:var(--c);box-shadow:0 0 6px var(--c)"></div></div>
+      <div class="tpct" style="color:var(--c)">${m.count}</div>
+    </div>`).join('') +
+    `<div class="ref-note gap">Live mention count of each topic's keywords across ${ALL_HEADLINES.length} headlines pulled this session (reflects what's been fetched, not total media volume).</div>`;
+}
+window.renderTechMonitor = renderTechMonitor;
+
+/* ---------------------------------------------------------------------
    SEVERITY FILTER CHIPS — reusable across trend cards, conflict map, globe
 --------------------------------------------------------------------- */
 function buildFilterChips(containerId, onChange){
@@ -1156,9 +1187,12 @@ function initEverything(){
   setTimeout(()=>loadFeedGroup('feed-domestic', RSS_FEEDS.domestic, 'tc'), 3200);
   setTimeout(()=>loadFeedGroup('feed-defense', RSS_FEEDS.defense, 'tr'), 4600);
   setTimeout(()=>loadFeedGroup('feed-geo', RSS_FEEDS.geo, 'tc'), 6000);
+  setTimeout(()=>loadFeedGroup('feed-tech', RSS_FEEDS.tech, 'tc'), 7400);
+  setTimeout(()=>loadFeedGroup('feed-ai', RSS_FEEDS.ai, 'tr'), 8800);
   setTimeout(()=>loadStocks(), 1000);
 
-  setTimeout(()=>{ generateDailySynopsis(); renderConflictMonitor(); }, 6000); // give feeds a head start first
+  setTimeout(()=>{ generateDailySynopsis(); renderConflictMonitor(); renderTechMonitor(); }, 6000);
+  setTimeout(()=>{ renderTechMonitor(); }, 9200); // catch up once tech/ai feeds land
 
   // periodic refresh — keeps the dashboard current without user action.
   // Intervals are spaced out (and skip entirely while the tab is in the
@@ -1172,7 +1206,9 @@ function initEverything(){
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-domestic', RSS_FEEDS.domestic, 'tc')), 600000); // 10 min
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-geo', RSS_FEEDS.geo, 'tc')), 600000);          // 10 min
   setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-defense', RSS_FEEDS.defense, 'tr')), 900000);  // 15 min
-  setInterval(()=>refreshIfVisible(()=>{ generateDailySynopsis(); renderConflictMonitor(); }), 900000);   // 15 min
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-tech', RSS_FEEDS.tech, 'tc')), 900000);        // 15 min
+  setInterval(()=>refreshIfVisible(()=>loadFeedGroup('feed-ai', RSS_FEEDS.ai, 'tr')), 900000);            // 15 min
+  setInterval(()=>refreshIfVisible(()=>{ generateDailySynopsis(); renderConflictMonitor(); renderTechMonitor(); }), 900000);   // 15 min
 }
 
 document.addEventListener('DOMContentLoaded', boot);

@@ -14,7 +14,7 @@
 <title>WRAITH//NET — OSINT INTELLIGENCE TERMINAL</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oxanium:wght@400;500;600;700;800&family=VT323&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="style.css?v=18">
+<link rel="stylesheet" href="style.css?v=19">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
@@ -96,6 +96,7 @@
   <button class="tb" data-t="news">◈ NEWS WIRE</button>
   <button class="tb" data-t="social">◎ SOCIAL / OSINT</button>
   <button class="tb" data-t="trending">▦ TRENDING &amp; ANALYSIS</button>
+  <button class="tb" data-t="tech">⌗ TECH WATCH</button>
   <button class="tb" data-t="markets">▲ MARKETS</button>
   <button class="tb" data-t="trackers">▶ LIVE TRACKERS</button>
   <button class="tb" data-t="geospatial">◐ GEOSPATIAL</button>
@@ -334,6 +335,40 @@
   </div>
 </div>
 
+<!-- ═══════════ TECH WATCH (General Tech + AI) ═══════════ -->
+<div class="tp" id="tp-tech">
+  <div class="pnl c">
+    <div class="ph c"><div class="pt">◈ TECH TREND MONITOR — LIVE MENTIONS</div><span class="pbadge live">● LIVE</span></div>
+    <div class="pb" id="tech-monitor"></div>
+  </div>
+
+  <div class="sec-switch gap">
+    <label>FEED</label>
+    <select class="sec-select" data-group="tech">
+      <option value="general">GENERAL TECH</option>
+      <option value="ai">AI &amp; MACHINE LEARNING</option>
+    </select>
+  </div>
+
+  <div class="subpanel" data-group="tech" data-key="general">
+    <div class="pnl">
+      <div class="ph"><div class="pt">⌗ GENERAL TECH — ARS TECHNICA / THE VERGE / WIRED / TECHCRUNCH / MIT TR / HN</div>
+        <button class="rbtn" onclick="loadFeedGroup('feed-tech', RSS_FEEDS.tech, 'tc')">↻ REFRESH</button>
+      </div>
+      <div class="pb"><div class="feed" id="feed-tech" style="max-height:640px;"></div></div>
+    </div>
+  </div>
+
+  <div class="subpanel" data-group="tech" data-key="ai" style="display:none;">
+    <div class="pnl r">
+      <div class="ph r"><div class="pt">◭ AI &amp; MACHINE LEARNING — MIT TR / VENTUREBEAT / ARS TECHNICA / HN</div>
+        <button class="rbtn" onclick="loadFeedGroup('feed-ai', RSS_FEEDS.ai, 'tr')">↻ REFRESH</button>
+      </div>
+      <div class="pb"><div class="feed" id="feed-ai" style="max-height:640px;"></div></div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════ MARKETS (Equities + Crypto) ═══════════ -->
 <div class="tp" id="tp-markets">
   <div class="g2">
@@ -547,7 +582,7 @@
 </footer>
 </div>
 
-<script src="data.js?v=18"></script>
-<script src="app.js?v=18"></script>
+<script src="data.js?v=19"></script>
+<script src="app.js?v=19"></script>
 </body>
 </html>

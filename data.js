@@ -76,6 +76,20 @@ const RSS_FEEDS = {
     { name:'BBC WORLD', url:'http://feeds.bbci.co.uk/news/world/rss.xml' },
     { name:'TASS (STATE-RUN RU — CONTEXT ONLY)', url:'https://tass.com/rss/v2.xml' },
   ],
+  tech: [
+    { name:'ARS TECHNICA', url:'https://feeds.arstechnica.com/arstechnica/index' },
+    { name:'THE VERGE', url:'https://www.theverge.com/rss/index.xml' },
+    { name:'WIRED', url:'https://www.wired.com/feed/rss' },
+    { name:'TECHCRUNCH', url:'https://techcrunch.com/feed/' },
+    { name:'MIT TECHNOLOGY REVIEW', url:'https://www.technologyreview.com/feed/' },
+    { name:'HACKER NEWS — FRONT PAGE', url:'https://hnrss.org/frontpage' },
+  ],
+  ai: [
+    { name:'MIT TECH REVIEW — AI', url:'https://www.technologyreview.com/topic/artificial-intelligence/feed' },
+    { name:'VENTUREBEAT — AI', url:'https://venturebeat.com/category/ai/feed/' },
+    { name:'ARS TECHNICA — AI', url:'https://arstechnica.com/ai/feed/' },
+    { name:'HACKER NEWS — "AI" SEARCH', url:'https://hnrss.org/newest?q=AI+OR+LLM+OR+%22machine+learning%22' },
+  ],
 };
 
 /* CORS proxies tried in order — all free, no key. First one that
@@ -529,4 +543,19 @@ const MILITARY_TACTICS = [
     how:'Forces attempt to separate insurgents from their civilian support base through a mix of security operations, governance support, economic development, and information campaigns — "clear, hold, build."',
     example:'U.S./coalition counterinsurgency doctrine (FM 3-24) applied in Iraq\'s 2007 troop "surge."',
     wiki:'https://en.wikipedia.org/wiki/Counterinsurgency' },
+];
+
+/* ---- TECH TREND MONITOR — keyword sets for a live mention-count panel
+   over whatever tech/AI headlines have been pulled this session, same
+   pattern as the Conflict Monitor for geopolitical hotspots. ---- */
+const TECH_TOPICS = [
+  { name:'ARTIFICIAL INTELLIGENCE / LLMs', keywords:['artificial intelligence',' ai ','a.i.','llm','chatgpt','gpt-','gemini','claude','openai','anthropic','machine learning'] },
+  { name:'SEMICONDUCTORS / CHIPS', keywords:['semiconductor','chip','nvidia','tsmc','foundry','wafer','asml'] },
+  { name:'CYBERSECURITY', keywords:['cybersecurity','ransomware','data breach','zero-day','vulnerability','hacker','malware'] },
+  { name:'QUANTUM COMPUTING', keywords:['quantum computing','qubit','quantum computer'] },
+  { name:'SPACE / AEROSPACE TECH', keywords:['spacex','starship','satellite launch','nasa','space station','rocket launch'] },
+  { name:'BIOTECH / HEALTH TECH', keywords:['biotech','gene editing','crispr','mrna','clinical trial'] },
+  { name:'ROBOTICS / AUTONOMY', keywords:['robotics','autonomous vehicle','self-driving','humanoid robot','drone'] },
+  { name:'CRYPTO / BLOCKCHAIN', keywords:['blockchain','cryptocurrency','bitcoin','ethereum','crypto exchange'] },
+  { name:'BIG TECH / REGULATION', keywords:['antitrust','tech regulation','data privacy','ftc','eu regulators','app store'] },
 ];
