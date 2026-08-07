@@ -260,6 +260,18 @@ function initSubpanelSelects(){
 /* ---------------------------------------------------------------------
    FETCH-VIA-PROXY ENGINE (RSS/XML sources with no CORS headers)
 --------------------------------------------------------------------- */
+// Shared timeout wrapper for direct (non-proxy) CORS-open API calls, so a
+// stalled network request can't leave a section spinning forever.
+async function fetchJson(url, timeoutMs=8000){
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), timeoutMs);
+  try{
+    const res = await fetch(url, { signal: ctrl.signal });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  } finally { clearTimeout(t); }
+}
+
 function looksLikeFeed(text){
   if(!text || text.length < 40) return false;
   const head = text.slice(0,400).toLowerCase();
@@ -276,17 +288,27 @@ async function fetchOnce(url, timeoutMs){
     return text;
   } finally { clearTimeout(t); }
 }
-async function fetchViaProxies(url, timeoutMs=14000){
-  let lastErr;
-  for(const build of CORS_PROXIES){
-    const proxied = build(url);
-    // retry once per proxy — the free proxies above are flaky under burst load
-    for(let attempt=0; attempt<2; attempt++){
-      try{ return await fetchOnce(proxied, timeoutMs); }
-      catch(e){ lastErr = e; if(attempt===0) await new Promise(r=>setTimeout(r, 700)); }
-    }
+// Races all CORS proxies in parallel instead of trying them one at a time —
+// sequential trying was the cause of sections (like Live Headlines) hanging
+// for 30-90s when the first proxy in line was slow. Whichever proxy answers
+// first with valid feed content wins; only fails if all of them do.
+async function fetchViaProxiesOnce(url, timeoutMs=9000){
+  const attempts = CORS_PROXIES.map(build => fetchOnce(build(url), timeoutMs));
+  try{
+    return await Promise.any(attempts);
+  }catch(aggErr){
+    const first = aggErr?.errors?.[0];
+    throw first || new Error('all proxies failed');
   }
-  throw lastErr || new Error('all proxies failed');
+}
+// One automatic retry (fresh race across all proxies again) before surfacing
+// a failure — smooths over a transient blip without the user having to act.
+async function fetchViaProxies(url, timeoutMs=9000){
+  try{ return await fetchViaProxiesOnce(url, timeoutMs); }
+  catch(e){
+    await new Promise(r=>setTimeout(r, 600));
+    return fetchViaProxiesOnce(url, timeoutMs);
+  }
 }
 
 function stripHtml(s){
@@ -357,9 +379,11 @@ const wait = ms => new Promise(r=>setTimeout(r, ms));
 async function loadFeedGroup(containerId, feeds, tagClass){
   const el = document.getElementById(containerId);
   if(el) el.innerHTML = '<div class="loading-txt"><span class="spin">◌</span> PULLING LIVE FEEDS...</div>';
-  // stagger individual requests within the group too — same proxy, same burst problem
+  // light stagger between feeds in the group — each feed now races all 3
+  // proxies in parallel and typically resolves fast, so this just keeps a
+  // burst of e.g. 6 feeds from firing all 18 proxy requests in one instant
   const results = await Promise.allSettled(feeds.map((f,i)=>
-    wait(i*450).then(()=>fetchViaProxies(f.url)).then(txt=>parseFeedXML(txt, f.name))
+    wait(i*180).then(()=>fetchViaProxies(f.url)).then(txt=>parseFeedXML(txt, f.name))
   ));
   let merged = [];
   results.forEach(r=>{ if(r.status==='fulfilled') merged = merged.concat(r.value); });
@@ -425,8 +449,7 @@ async function loadWikiTrending(){
   const y = d.getUTCFullYear(), m = String(d.getUTCMonth()+1).padStart(2,'0'), day = String(d.getUTCDate()).padStart(2,'0');
   const url = `https://wikimedia.org/api/rest_v1/metrics/pageviews/top/${WIKI_PROJECT}/all-access/${y}/${m}/${day}`;
   try{
-    const res = await fetch(url);
-    const j = await res.json();
+    const j = await fetchJson(url, 8000);
     const all = (j.items?.[0]?.articles || []).filter(a=>!/^(Main_Page|Special:|Wikipedia:|Talk:)/.test(a.article));
     const relevant = all.filter(a=>isGeoRelevant(a.article)).slice(0,20);
     const usingFallback = relevant.length < 5;
@@ -480,8 +503,8 @@ async function loadWeather(){
   el.innerHTML = '<div class="loading-txt"><span class="spin">◌</span> PULLING GLOBAL WEATHER...</div>';
   try{
     const results = await Promise.all(WEATHER_CITIES.map(c=>
-      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m,precipitation,rain`)
-        .then(r=>r.json()).then(j=>({city:c.name, lat:c.lat, lon:c.lon, cur:j.current})).catch(()=>({city:c.name, lat:c.lat, lon:c.lon, cur:null}))
+      fetchJson(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m,precipitation,rain`, 8000)
+        .then(j=>({city:c.name, lat:c.lat, lon:c.lon, cur:j.current})).catch(()=>({city:c.name, lat:c.lat, lon:c.lon, cur:null}))
     ));
     el.innerHTML = results.map(r=>{
       const coordTxt = `${Math.abs(r.lat).toFixed(2)}°${r.lat>=0?'N':'S'}, ${Math.abs(r.lon).toFixed(2)}°${r.lon>=0?'E':'W'}`;
@@ -510,8 +533,7 @@ async function loadCrypto(){
   const el = document.getElementById('crypto-list');
   el.innerHTML = '<div class="loading-txt"><span class="spin">◌</span> LOADING CRYPTO MARKETS...</div>';
   try{
-    const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${CRYPTO_IDS.join(',')}&order=market_cap_desc`);
-    const data = await res.json();
+    const data = await fetchJson(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${CRYPTO_IDS.join(',')}&order=market_cap_desc`, 8000);
     el.innerHTML = data.map(c=>`
       <div class="crow">
         <div><div class="csym">${c.symbol.toUpperCase()}</div><div class="cname">${c.name}</div></div>
